@@ -1,6 +1,6 @@
 # mini-platform
 
-This project aims to show a real case example of a microservices platform (small) that is heavily based in monix and it's subprojects.
+This project aims to show a real case example of a mini microservices platform that is heavily based in monix and it's subprojects.
 
 The platform is composed by three application, the master, slave and archiver. (see monix-mini-platform.png) 
 
