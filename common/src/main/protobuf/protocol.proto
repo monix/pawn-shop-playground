@@ -1,0 +1,55 @@
+syntax = "proto3";
+
+package monix.mini.platform;
+
+//Master slave service definition
+service MasterSlaveProtocol {
+  rpc join (JoinRequest) returns (JoinReply) {}
+}
+
+service SlaveProtocol {
+  rpc insert (InsertRequest) returns (InsertReply) {}
+  rpc find (FindRequest) returns (Document) {}
+}
+
+message InsertRequest {
+  Context context = 1;
+  Document document = 2;
+}
+
+message Context {
+  string requesterId = 1;
+  string timestamp = 2;
+}
+
+message Document {
+  string key = 1;
+  string value = 2;
+}
+
+message FindRequest {
+  Context context = 1;
+  string key = 2;
+}
+
+message InsertReply {
+  InsertResult result = 1;
+}
+enum InsertResult {
+  INSERTED = 0;
+  DUPLICATED = 1;
+  FAILED = 2;
+}
+
+//join
+message JoinRequest {
+  string slave_id = 4;
+}
+
+message JoinReply {
+  JoinResponse response = 1;
+}
+enum JoinResponse {
+  JOINED = 0;
+  REJECTED = 1;
+}

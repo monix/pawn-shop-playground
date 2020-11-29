@@ -3,7 +3,7 @@ package monix.mini.platform.config
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter.ISO_DATE
 
-import MasterConfig.WebServerConfiguration
+import MasterConfig.{ GrpcServerConfiguration, HttpServerConfiguration }
 import io.circe._
 import io.circe.generic.auto._
 import io.circe.generic.semiauto._
@@ -15,7 +15,7 @@ import pureconfig.generic.auto._
 
 import scala.concurrent.duration.FiniteDuration
 
-case class MasterConfig(server: WebServerConfiguration) {
+case class MasterConfig(httpServer: HttpServerConfiguration, grpcServer: GrpcServerConfiguration) {
   def toJson: String = this.asJson.noSpaces
 }
 
@@ -31,7 +31,12 @@ object MasterConfig {
 
   def load(): MasterConfig = loadConfigOrThrow[MasterConfig]
 
-  case class WebServerConfiguration(
+  case class HttpServerConfiguration(
+    host: String,
+    port: Int,
+    endPoint: String)
+
+  case class GrpcServerConfiguration(
     host: String,
     port: Int,
     endPoint: String)

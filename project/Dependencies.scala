@@ -3,13 +3,10 @@ import sbt._
 object Dependencies {
 
   object DependencyVersions {
-    val PureConfig = "0.10.1"
+    val PureConfig = "0.14.0"
     val Monix = "3.3.0"
-    val Circe = "0.11.1"
-    val Http4s = "0.20.10"
-    val AkkaHttp = "10.1.11"
-    val Akka = "2.5.26"
-    val TypesafeConfig = "1.3.2"
+    val Circe = "0.12.3"
+    val Http4s = "0.21.13"
 
     val Log4jScala = "11.0"
     val Log4j = "2.10.0"
@@ -29,11 +26,6 @@ object Dependencies {
     "io.grpc"                   % "grpc-netty"             % scalapb.compiler.Version.grpcJavaVersion,
     "com.thesamet.scalapb"      %% "scalapb-runtime-grpc"  % scalapb.compiler.Version.scalapbVersion,
     "com.thesamet.scalapb"      %% "scalapb-runtime"       % scalapb.compiler.Version.scalapbVersion % "protobuf",
-    "com.thesamet.scalapb"      %% "compilerplugin"        % "0.7.0",
-    "org.apache.logging.log4j"  %% "log4j-api-scala"       % DependencyVersions.Log4jScala,
-    "org.apache.logging.log4j"  % "log4j-api"              % DependencyVersions.Log4j,
-    "org.apache.logging.log4j"  % "log4j-core"             % DependencyVersions.Log4j,
-    "org.apache.logging.log4j"  % "log4j-slf4j-impl"       % DependencyVersions.Log4j,
     "io.monix"                  %% "monix"                 % DependencyVersions.Monix,
     "org.http4s"                %% "http4s-server"         % DependencyVersions.Http4s,
     "org.http4s"                %% "http4s-core"           % DependencyVersions.Http4s,
@@ -45,6 +37,13 @@ object Dependencies {
     "io.circe"                  %% "circe-parser"          % DependencyVersions.Circe,
     "com.typesafe.scala-logging"    %% "scala-logging" % DependencyVersions.ScalaLogging,
     "com.github.pureconfig"     %% "pureconfig"            % DependencyVersions.PureConfig
+  )
+
+
+  val CommonDependencies: Seq[ModuleID] =Seq(
+    "io.grpc"                   % "grpc-netty"             % scalapb.compiler.Version.grpcJavaVersion,
+    "com.thesamet.scalapb"      %% "scalapb-runtime-grpc"  % scalapb.compiler.Version.scalapbVersion,
+    "com.thesamet.scalapb"      %% "scalapb-runtime"       % scalapb.compiler.Version.scalapbVersion % "protobuf"
   )
 
 }
