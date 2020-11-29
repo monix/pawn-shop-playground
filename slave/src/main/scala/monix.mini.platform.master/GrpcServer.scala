@@ -1,13 +1,16 @@
-package monix.mini.platform.master
+package monix.mini.platform.slave
 
-import io.grpc.{ Server, ServerBuilder }
+import io.grpc.{Server, ServerBuilder}
 import monix.eval.Task
-import monix.execution.{ CancelableFuture, Scheduler }
-import monix.mini.platform.config.MasterConfig
-import monix.mini.platform.protocol.{ JoinReply, JoinRequest, JoinResponse }
+import monix.execution.{CancelableFuture, Scheduler}
+import monix.mini.platform.master.config.SlaveConfig
+import monix.mini.platform.protocol.{Document, FindRequest, InsertReply, InsertRequest, JoinReply, JoinRequest, JoinResponse}
 import monix.mini.platform.protocol.MasterSlaveProtocolGrpc.MasterSlaveProtocol
+import monix.mini.platform.protocol.SlaveProtocolGrpc.SlaveProtocol
 
-class GrpcServer(dispatcher: Dispatcher)(implicit config: MasterConfig, scheduler: Scheduler) { self =>
+import scala.concurrent.Future
+
+class GrpcServer()(implicit config: SlaveConfig, scheduler: Scheduler) { self =>
 
   private[this] var server: Server = null
 
@@ -34,13 +37,13 @@ class GrpcServer(dispatcher: Dispatcher)(implicit config: MasterConfig, schedule
     }
   }
 
-  private class GreeterImpl extends MasterSlaveProtocol {
-    override def join(req: JoinRequest): CancelableFuture[JoinReply] = {
-      val joinResponse = req.slaveInfo match {
-        case Some(slaveInfo) => dispatcher.addNewSlave(slaveInfo)
-        case None => Task.now(JoinResponse.REJECTED)
-      }
-      joinResponse.map(JoinReply.of).runToFuture
+  private class GreeterImpl extends SlaveProtocol {
+    override def find(request: FindRequest): Future[Document] = {
+
+    }
+
+    override def insert(request: InsertRequest): Future[InsertReply] = {
+
     }
   }
 }

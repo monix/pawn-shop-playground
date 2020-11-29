@@ -5,6 +5,7 @@ object Dependencies {
   object DependencyVersions {
     val PureConfig = "0.14.0"
     val Monix = "3.3.0"
+    val MonixConnect = "0.5.0"
     val Circe = "0.12.3"
     val Http4s = "0.21.13"
 
@@ -36,9 +37,19 @@ object Dependencies {
     "io.circe"                  %% "circe-generic"         % DependencyVersions.Circe,
     "io.circe"                  %% "circe-parser"          % DependencyVersions.Circe,
     "com.typesafe.scala-logging"    %% "scala-logging" % DependencyVersions.ScalaLogging,
-    "com.github.pureconfig"     %% "pureconfig"            % DependencyVersions.PureConfig
+    "com.github.pureconfig"     %% "pureconfig"            % DependencyVersions.PureConfig,
+    "io.github.scalapb-json" %% "scalapb-circe" % "0.7.2"
   )
 
+  val SlaveDependencies: Seq[ModuleID] =Seq(
+    "io.grpc"                   % "grpc-netty"             % scalapb.compiler.Version.grpcJavaVersion,
+    "com.thesamet.scalapb"      %% "scalapb-runtime-grpc"  % scalapb.compiler.Version.scalapbVersion,
+    "com.thesamet.scalapb"      %% "scalapb-runtime"       % scalapb.compiler.Version.scalapbVersion % "protobuf",
+    "io.monix"                  %% "monix"                 % DependencyVersions.Monix,
+    "io.monix"                  %% "monix-mongodb"         % DependencyVersions.MonixConnect,
+    "com.typesafe.scala-logging"    %% "scala-logging" % DependencyVersions.ScalaLogging,
+    "com.github.pureconfig"     %% "pureconfig"            % DependencyVersions.PureConfig
+  )
 
   val CommonDependencies: Seq[ModuleID] =Seq(
     "io.grpc"                   % "grpc-netty"             % scalapb.compiler.Version.grpcJavaVersion,

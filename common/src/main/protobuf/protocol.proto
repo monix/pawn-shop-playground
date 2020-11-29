@@ -3,7 +3,7 @@ syntax = "proto3";
 package monix.mini.platform;
 
 //Master slave service definition
-service MasterSlaveProtocol {
+service MasterProtocol {
   rpc join (JoinRequest) returns (JoinReply) {}
 }
 
@@ -43,12 +43,19 @@ enum InsertResult {
 
 //join
 message JoinRequest {
-  string slave_id = 4;
+ SlaveInfo slaveInfo = 1;
+}
+
+message SlaveInfo {
+  string slave_id = 1;
+  string host = 2;
+  int32 port = 3;
 }
 
 message JoinReply {
   JoinResponse response = 1;
 }
+
 enum JoinResponse {
   JOINED = 0;
   REJECTED = 1;
