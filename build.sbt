@@ -23,7 +23,7 @@ lazy val master = (project in file("master"))
 lazy val slave = (project in file("slave"))
   .settings(
     name := "monix-slave",
-    libraryDependencies ++= MasterDependencies,
+    libraryDependencies ++= SlaveDependencies,
     version := Version.version
   ).enablePlugins(JavaAppPackaging, DockerPlugin)
   .aggregate(common)

@@ -1,16 +1,15 @@
-package monix.mini.platform
+package monix.mini.platform.master
 
 import cats.effect.ExitCode
 import com.typesafe.scalalogging.LazyLogging
-import monix.eval.{Task, TaskApp}
+import monix.eval.{ Task, TaskApp }
 import org.http4s.implicits._
 import org.http4s.server.blaze._
 import monix.mini.platform.config.MasterConfig
 import monix.mini.platform.http.UserRoutes
 import monix.execution.Scheduler.Implicits.global
-import monix.mini.platform.master.{Dispatcher, GrpcServer}
 
-object ApplicationServer extends TaskApp with UserRoutes with LazyLogging {
+object MasterApp extends TaskApp with UserRoutes with LazyLogging {
 
   implicit val config: MasterConfig = MasterConfig.load()
 
@@ -23,6 +22,7 @@ object ApplicationServer extends TaskApp with UserRoutes with LazyLogging {
       .serve
       .compile
       .drain
+
     val grpcServer = Task.evalOnce(new GrpcServer(dispatcher).blockUntilShutdown())
 
     logger.info(s"Starting http server on endpoint: ${config.httpServer.endPoint}")

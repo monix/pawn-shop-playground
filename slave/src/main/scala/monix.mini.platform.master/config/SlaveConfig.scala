@@ -1,20 +1,18 @@
 package monix.mini.platform.master.config
 
 import SlaveConfig.GrpcServerConfiguration
-import io.circe._
-import io.circe.generic.auto._
-import io.circe.generic.semiauto._
+//import io.circe._
+//import io.circe.generic.auto._
+//import io.circe.generic.semiauto._
 import pureconfig._
 import pureconfig.generic.ProductHint
 import pureconfig.generic.auto._
 
-
-case class SlaveConfig(grpcServer: GrpcServerConfiguration)
+case class SlaveConfig(slaveId: String, grpcServer: GrpcServerConfiguration, masterServer: GrpcServerConfiguration)
 
 object SlaveConfig {
 
   implicit val confHint: ProductHint[SlaveConfig] = ProductHint[SlaveConfig](ConfigFieldMapping(CamelCase, KebabCase))
-  implicit val encodeAppConfig: Encoder[SlaveConfig] = deriveEncoder
 
   def load(): SlaveConfig = loadConfigOrThrow[SlaveConfig]
 

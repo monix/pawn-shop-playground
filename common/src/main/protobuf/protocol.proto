@@ -9,7 +9,7 @@ service MasterProtocol {
 
 service SlaveProtocol {
   rpc insert (InsertRequest) returns (InsertReply) {}
-  rpc find (FindRequest) returns (Document) {}
+  rpc find (FindRequest) returns (FindReply) {}
 }
 
 message InsertRequest {
@@ -30,6 +30,11 @@ message Document {
 message FindRequest {
   Context context = 1;
   string key = 2;
+}
+
+
+message FindReply {
+  Document document = 1;
 }
 
 message InsertReply {
