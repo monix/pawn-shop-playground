@@ -6,7 +6,7 @@ import monix.eval.{ Task, TaskApp }
 import org.http4s.implicits._
 import org.http4s.server.blaze._
 import monix.mini.platform.config.MasterConfig
-import monix.mini.platform.http.UserRoutes
+import monix.mini.platform.master.http.UserRoutes
 import monix.execution.Scheduler.Implicits.global
 
 object MasterApp extends TaskApp with UserRoutes with LazyLogging {

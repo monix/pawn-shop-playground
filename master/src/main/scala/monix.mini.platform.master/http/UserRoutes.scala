@@ -1,47 +1,53 @@
-package monix.mini.platform.http
+package monix.mini.platform.master.http
 
 import org.http4s.circe.jsonOf
-import org.http4s.circe.jsonEncoderOf
 import com.typesafe.scalalogging.LazyLogging
 import io.circe.generic.auto._
 import org.http4s.{HttpRoutes, Response}
 import monix.eval.Task
+import monix.mini.platform.master.http.UserRoutes.{OperationEventView, TransactionEventView}
 import monix.mini.platform.master.Dispatcher
-import monix.mini.platform.protocol.{Document, FindReply, InsertRequest}
+import monix.mini.platform.protocol.{EventResult, FetchRequest, OperationEvent, ResultStatus, TransactionEvent, OperationType}
 import org.http4s.dsl.Http4sDsl
-import scalapb_circe.JsonFormat.protoToDecoder
 
 trait UserRoutes extends Http4sDsl[Task] with LazyLogging {
 
-  implicit val insertRequest = jsonOf[Task, InsertRequest]
+  implicit val transactionEventDecoder = jsonOf[Task, TransactionEventView]
+  implicit val operationEventDecoder = jsonOf[Task, OperationEventView]
 
   val dispatcher: Dispatcher
 
-  case class DocumentResponse(key: String, value: String)
-  //implicit val documentEncoder = jsonEncoderOf[Task, ]
-
   lazy val routes: HttpRoutes[Task] = HttpRoutes.of[Task] {
 
-
-    case req @ GET -> Root => {
+    case _ @ GET -> Root => {
       logger.info("Index request received")
       Ok("Monix Mini Platform")
     }
 
-    case req @ POST -> Root / "insert" => {
-      val insertOne: Task[InsertRequest] = req.as[InsertRequest]
-      logger.info(s"Insert one received: $insertOne")
-      Ok()
+    case _ @ GET -> Root / "find" / client => {
+      logger.info(s"Read one received request.")
+      dispatcher.dispatch(FetchRequest.of(client))
+        .map(response => Response(status = Ok).withEntity(response.toByteArray))
     }
 
-    case req @ GET -> Root / "find" / key => {
-
-      logger.info(s"Read one received request.")
-      dispatcher.sendFindRequest(key).map {
-        case FindReply(Some(document: Document), _) =>  Response(status = Ok).withEntity(document.toByteArray)
-        case FindReply(None, _) =>  Response(status = NotFound)
+    case req @ POST -> Root / "transaction" => {
+      val insertRequest: Task[TransactionEvent] = req.as[TransactionEventView].map(_.toProto)
+      logger.info(s"Transaction received one received")
+      insertRequest.flatMap(dispatcher.dispatch(_)).map {
+        case EventResult(ResultStatus.INSERTED, _) =>  Response(status = Ok).withEntity(ResultStatus.INSERTED.toString())
+        case EventResult(ResultStatus.FAILED, _)  =>  Response(status = NotFound).withEntity(ResultStatus.FAILED.toString())
       }
+    }
 
+    case req @ POST -> Root / "operation" => {
+      val insertRequest: Task[OperationEvent] = req.as[OperationEventView].map(_.toProto)
+      logger.info(s"Insert one received")
+
+      insertRequest.flatMap(dispatcher.dispatch(_)).map {
+
+        case EventResult(ResultStatus.INSERTED, _) =>  Response(status = Ok).withEntity(ResultStatus.INSERTED.toString())
+        case EventResult(ResultStatus.FAILED, _)  =>  Response(status = NotFound).withEntity(ResultStatus.FAILED.toString())
+      }
     }
 
   }
@@ -49,5 +55,15 @@ trait UserRoutes extends Http4sDsl[Task] with LazyLogging {
 }
 
 object UserRoutes {
-  case class InsertOne(user: String, key: String, value: String)
+  case class TransactionEventView(id: String, sender: String, receiver: String, amount: Long) {
+    def toProto: TransactionEvent = {
+      TransactionEvent.of(sender, receiver, amount)
+    }
+  }
+  case class OperationEventView(id: String, client: String, amount: Long, location: String, operationType: OperationType) {
+    def toProto: OperationEvent = {
+      OperationEvent.of(client, amount, location, operationType)
+    }
+  }
+
 }

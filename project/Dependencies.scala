@@ -5,7 +5,7 @@ object Dependencies {
   object DependencyVersions {
     val PureConfig = "0.14.0"
     val Monix = "3.3.0"
-    val MonixConnect = "0.5.0"
+    val MonixConnect = "0.5.2"
     val Circe = "0.12.3"
     val Http4s = "0.21.13"
 
@@ -41,7 +41,6 @@ object Dependencies {
     "ch.qos.logback" % "logback-classic" % "1.2.3",
     "com.github.pureconfig"     %% "pureconfig"            % DependencyVersions.PureConfig,
     "io.github.scalapb-json" %% "scalapb-circe" % "0.7.2"
-
   )
 
   val SlaveDependencies: Seq[ModuleID] =Seq(
@@ -51,6 +50,7 @@ object Dependencies {
     "com.thesamet.scalapb"      %% "scalapb-runtime"       % scalapb.compiler.Version.scalapbVersion % "protobuf",
     "io.monix"                  %% "monix"                 % DependencyVersions.Monix,
     "io.monix"                  %% "monix-mongodb"         % DependencyVersions.MonixConnect,
+    "io.monix" %% "monix-redis" % DependencyVersions.MonixConnect,
     "com.typesafe.scala-logging" %% "scala-logging" % DependencyVersions.ScalaLogging,
     "ch.qos.logback" % "logback-classic" % "1.2.3",
     "com.github.pureconfig"     %% "pureconfig"            % DependencyVersions.PureConfig

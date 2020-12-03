@@ -8,39 +8,55 @@ service MasterProtocol {
 }
 
 service SlaveProtocol {
-  rpc insert (InsertRequest) returns (InsertReply) {}
-  rpc find (FindRequest) returns (FindReply) {}
+  rpc operation (OperationEvent) returns (EventResult) {}
+  rpc transaction (TransactionEvent) returns (EventResult) {}
+  rpc fetch (FetchRequest) returns (FetchReply) {}
 }
 
-message InsertRequest {
-  Context context = 1;
-  Document document = 2;
+message OperationEvent {
+  string client = 1;
+  int64 amount = 2;
+  string location = 3;
+  OperationType operationType = 4;
 }
 
-message Context {
-  string requesterId = 1;
-  string timestamp = 2;
+enum OperationType {
+  DEPOSIT = 0;
+  WITHDRAW = 1;
 }
 
-message Document {
-  string key = 1;
-  string value = 2;
+message TransactionEvent {
+  string sender = 1;
+  string receiver = 2;
+  int64 amount = 3;
 }
 
-message FindRequest {
-  Context context = 1;
-  string key = 2;
+message Recipient {
+  string name = 1;
+  RecipientType type = 2;
+}
+
+enum RecipientType {
+  PERSON = 0;
+  ENTITY = 1;
+  ANONYMOUS = 2;
+}
+
+message FetchRequest {
+  string client = 1;
 }
 
 
-message FindReply {
-  Document document = 1;
+message FetchReply {
+  repeated TransactionEvent transactions = 1;
+  repeated OperationEvent operations = 2;
 }
 
-message InsertReply {
-  InsertResult result = 1;
+message EventResult {
+  ResultStatus status = 1;
 }
-enum InsertResult {
+
+enum ResultStatus {
   INSERTED = 0;
   DUPLICATED = 1;
   FAILED = 2;

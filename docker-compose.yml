@@ -1,0 +1,34 @@
+version: "3.7"
+
+services:
+
+  minio:
+    image: minio/minio
+    ports:
+      - "9000:9000"
+    volumes:
+      - ./minio/data:/data
+    environment:
+      - MINIO_ACCESS_KEY=TESTKEY
+      - MINIO_SECRET_KEY=TESTSECRET
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 35s
+      timeout: 20s
+      retries: 3
+    command: server --compat /data
+
+  mongo:
+    image: mongo
+    ports:
+      - "27017:27017"
+
+  mongoclient:
+    image: mongoclient/mongoclient
+    ports:
+      - "3000:3000"
+
+  redis:
+    image: redis
+    ports:
+      - 6379:6379

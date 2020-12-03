@@ -5,7 +5,9 @@ import io.grpc.ManagedChannelBuilder
 import monix.catnap.MVar
 import monix.eval.Task
 import monix.mini.platform.config.MasterConfig
-import monix.mini.platform.protocol.{FindReply, FindRequest, JoinResponse, SlaveInfo, SlaveProtocolGrpc}
+import monix.mini.platform.protocol.{EventResult, FetchReply, FetchRequest, JoinResponse, OperationEvent, ResultStatus, SlaveInfo, SlaveProtocolGrpc, TransactionEvent}
+
+import scala.concurrent.Future
 
 class Dispatcher(implicit config: MasterConfig) extends LazyLogging{
 
@@ -37,23 +39,38 @@ class Dispatcher(implicit config: MasterConfig) extends LazyLogging{
   def chooseSlave: Task[Option[SlaveRef]] = {
     for {
       mvar <- slaves
-      lazyList <- mvar.read
+      slaves <- mvar.read
       next <- Task.now {
-        val slaveRef = lazyList.headOption //todo
-        logger.info(s"Choosen slave ref ${slaveRef} from the available list of: ${lazyList}")
+        val slaveRef = slaves.headOption //todo pick one aleatory
+        logger.info(s"Choosen slave ref ${slaveRef} from the available list of slaves: ${slaves}")
         slaveRef
       }
     } yield next
   }
 
-  def sendFindRequest(key: String): Task[FindReply] = {
-    val findRequest = FindRequest.of(None, key)
+  def dispatch(transactionEvent: TransactionEvent): Task[EventResult] = {
+    logger.info("Dispatching transaction")
+    val send = (slaveRef: SlaveRef, transactionEvent: TransactionEvent) => slaveRef.stub.transaction(transactionEvent)
+    dispatch[TransactionEvent, EventResult](transactionEvent, send, EventResult.of(ResultStatus.FAILED))
+  }
+
+  def dispatch(operationEvent: OperationEvent): Task[EventResult] = {
+    val send = (slaveRef: SlaveRef, operationEvent: OperationEvent) => slaveRef.stub.operation(operationEvent)
+    dispatch(operationEvent, send, EventResult.of(ResultStatus.FAILED))
+  }
+
+  def dispatch(fetchRequest: FetchRequest): Task[FetchReply] = {
+    val send = (slaveRef: SlaveRef, fetchRequest: FetchRequest) => slaveRef.stub.fetch(fetchRequest)
+    dispatch(fetchRequest, send, FetchReply.defaultInstance)
+  }
+
+  def dispatch[E, R](event: E, send: (SlaveRef, E) => Future[R], fallback: R): Task[R] = {
     for {
       maybeSlaveRef <- chooseSlave
       joinReq <- {
         maybeSlaveRef match {
-          case Some(slaveRef) => Task.fromFuture(slaveRef.stub.find(findRequest))
-          case None => Task.now(FindReply.defaultInstance)
+          case Some(slaveRef) => Task.fromFuture(send(slaveRef, event))
+          case None => Task.now(fallback)
         }
       }
     } yield joinReq
