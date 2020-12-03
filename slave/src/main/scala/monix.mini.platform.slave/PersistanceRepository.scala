@@ -3,7 +3,7 @@ package monix.mini.platform.slave
 import com.mongodb.reactivestreams.client.{MongoClient, MongoClients, MongoDatabase}
 import io.lettuce.core.RedisClient
 import io.lettuce.core.api.StatefulRedisConnection
-import monix.mini.platform.protocol.OperationEvent
+import monix.mini.platform.protocol.{OperationEvent, OperationEventEntity, TransactionEventEntity}
 import org.bson.codecs.configuration.{CodecRegistries, CodecRegistry}
 import org.bson.codecs.configuration.CodecRegistries.{fromProviders, fromRegistries}
 import org.mongodb.scala.MongoClient.DEFAULT_CODEC_REGISTRY
@@ -13,10 +13,10 @@ object PersistanceRepository {
 
   val slaveConfig = config.SlaveConfig.load()
 
-
   //mongodb
   val client: MongoClient = MongoClients.create(s"mongodb://localhost:27017")
-  val db: MongoDatabase = client.getDatabase("mini-platform")
+  val db: MongoDatabase = client.getDatabase("mini_platform")
+
   val operationTypeCodecRegistry: CodecRegistry = CodecRegistries.fromCodecs(new OperationTypeCodec())
   val codecRegistry = fromRegistries(operationTypeCodecRegistry, fromProviders(classOf[OperationEventEntity], classOf[TransactionEventEntity], classOf[OperationEvent]), DEFAULT_CODEC_REGISTRY)
   val transactionsCol = db.getCollection("transactions", classOf[TransactionEventEntity])

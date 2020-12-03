@@ -28,7 +28,7 @@ enum OperationType {
 message TransactionEvent {
   string sender = 1;
   string receiver = 2;
-  int64 amount = 3;
+  int64 p = 3;
 }
 
 message Recipient {

@@ -16,6 +16,7 @@ object MasterApp extends TaskApp with UserRoutes with LazyLogging {
   val dispatcher: Dispatcher = new Dispatcher()
 
   def run(args: List[String]): Task[ExitCode] = {
+
     val httpServer = BlazeServerBuilder[Task](global)
       .bindHttp(config.httpServer.port, config.httpServer.host)
       .withHttpApp(routes.orNotFound)
@@ -23,7 +24,7 @@ object MasterApp extends TaskApp with UserRoutes with LazyLogging {
       .compile
       .drain
 
-    val grpcServer = Task.evalOnce(new GrpcServer(dispatcher).blockUntilShutdown())
+    val grpcServer = Task(new GrpcServer(dispatcher).blockUntilShutdown())
 
     logger.info(s"Starting http server on endpoint: ${config.httpServer.endPoint}")
     logger.info(s"Starting grpc server on endpoint: ${config.grpcServer.endPoint}")

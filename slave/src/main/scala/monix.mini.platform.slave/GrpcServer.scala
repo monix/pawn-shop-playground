@@ -2,14 +2,15 @@ package monix.mini.platform.slave
 
 import com.typesafe.scalalogging.LazyLogging
 import io.grpc.{Server, ServerBuilder}
-import monix.connect.mongodb.MongoOp
+import monix.connect.mongodb.{MongoOp, MongoSource}
 import monix.connect.redis.RedisSet
 import monix.eval.Task
 import monix.execution.Scheduler
 import monix.mini.platform.protocol.SlaveProtocolGrpc.SlaveProtocol
-import monix.mini.platform.slave.PersistanceRepository.{operationsCol, transactionsCol, connection}
+import monix.mini.platform.slave.PersistanceRepository.{connection, operationsCol, transactionsCol}
 import monix.mini.platform.protocol._
 import monix.mini.platform.slave.config.SlaveConfig
+import com.mongodb.client.model.Filters
 
 import scala.concurrent.Future
 
@@ -41,6 +42,7 @@ class GrpcServer(implicit config: SlaveConfig, scheduler: Scheduler) extends Laz
   }
 
   private class SlaveProtocolImpl extends SlaveProtocol {
+
     override def operation(operationEvent: OperationEvent): Future[EventResult] = {
       logger.info(s"Received operation event: ${operationEvent}")
       (for {
@@ -64,7 +66,11 @@ class GrpcServer(implicit config: SlaveConfig, scheduler: Scheduler) extends Laz
 
     override def fetch(request: FetchRequest): Future[FetchReply] = {
       logger.info(s"Received fetch request: ${request}")
-      Future.successful(FetchReply.defaultInstance)
+      (for {
+        transactions <- MongoSource.find(transactionsCol, Filters.eq("sender", request.client)).map(_.toProto).toListL
+        operations <- MongoSource.find(operationsCol, Filters.eq("client", request.client)).map(_.toProto).toListL
+      } yield FetchReply.of(transactions, operations))
+        .runToFuture
     }
 
   }
