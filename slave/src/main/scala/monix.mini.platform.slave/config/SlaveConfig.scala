@@ -1,14 +1,11 @@
 package monix.mini.platform.slave.config
 
-import monix.mini.platform.slave.config.SlaveConfig.GrpcServerConfiguration
-//import io.circe._
-//import io.circe.generic.auto._
-//import io.circe.generic.semiauto._
+import monix.mini.platform.slave.config.SlaveConfig.{GrpcServerConfig, MongoDbConfig, RedisConfig}
 import pureconfig._
 import pureconfig.generic.ProductHint
 import pureconfig.generic.auto._
 
-case class SlaveConfig(slaveId: String, grpcServer: GrpcServerConfiguration, masterServer: GrpcServerConfiguration)
+case class SlaveConfig(slaveId: String, grpcServer: GrpcServerConfig, masterServer: GrpcServerConfig, mongodb: MongoDbConfig, redis: RedisConfig)
 
 object SlaveConfig {
 
@@ -16,10 +13,22 @@ object SlaveConfig {
 
   def load(): SlaveConfig = loadConfigOrThrow[SlaveConfig]
 
-  case class GrpcServerConfiguration(
-    host: String,
-    port: Int,
-    endPoint: String)
+  case class GrpcServerConfig(host: String,
+                              port: Int,
+                              endPoint: String)
+
+  case class MongoDbConfig(host: String,
+                           port: Int,
+                           url: String,
+                           database: String,
+                           transactionsCollectionName: String,
+                           operationsCollectionName: String)
+
+  case class RedisConfig(host: String,
+                         port: Int,
+                         url: String,
+                         interactionsKeyPrefix: String,
+                         branchesKeyPrefix: String)
 
 }
 

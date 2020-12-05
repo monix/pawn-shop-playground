@@ -5,8 +5,10 @@ import io.grpc.ManagedChannelBuilder
 import monix.catnap.MVar
 import monix.eval.Task
 import monix.mini.platform.config.MasterConfig
-import monix.mini.platform.protocol.{EventResult, FetchReply, FetchRequest, JoinResponse, OperationEvent, ResultStatus, SlaveInfo, SlaveProtocolGrpc, TransactionEvent}
+import monix.mini.platform.master.algebra.Fetch
+import monix.mini.platform.protocol.{EventResult, FetchRequest, JoinResponse, OperationEvent, ResultStatus, SlaveInfo, SlaveProtocolGrpc, TransactionEvent}
 
+import scala.util.Random.shuffle
 import scala.concurrent.Future
 
 class Dispatcher(implicit config: MasterConfig) extends LazyLogging{
@@ -41,27 +43,28 @@ class Dispatcher(implicit config: MasterConfig) extends LazyLogging{
       mvar <- slaves
       slaves <- mvar.read
       next <- Task.now {
-        val slaveRef = slaves.headOption //todo pick one aleatory
+        val slaveRef = shuffle(slaves).headOption
         logger.info(s"Choosen slave ref ${slaveRef} from the available list of slaves: ${slaves}")
         slaveRef
       }
     } yield next
   }
 
+  val sendTransaction = (slaveRef: SlaveRef, transactionEvent: TransactionEvent) => slaveRef.stub.transaction(transactionEvent)
   def dispatch(transactionEvent: TransactionEvent): Task[EventResult] = {
-    logger.info("Dispatching transaction")
-    val send = (slaveRef: SlaveRef, transactionEvent: TransactionEvent) => slaveRef.stub.transaction(transactionEvent)
-    dispatch[TransactionEvent, EventResult](transactionEvent, send, EventResult.of(ResultStatus.FAILED))
+    logger.debug("Dispatching transaction")
+    dispatch[TransactionEvent, EventResult](transactionEvent, sendTransaction, EventResult.of(ResultStatus.FAILED))
   }
 
+  val sendOperation = (slaveRef: SlaveRef, operationEvent: OperationEvent) => slaveRef.stub.operation(operationEvent)
   def dispatch(operationEvent: OperationEvent): Task[EventResult] = {
-    val send = (slaveRef: SlaveRef, operationEvent: OperationEvent) => slaveRef.stub.operation(operationEvent)
-    dispatch(operationEvent, send, EventResult.of(ResultStatus.FAILED))
+    logger.debug("Dispatching transaction")
+    dispatch(operationEvent, sendOperation, EventResult.of(ResultStatus.FAILED))
   }
 
-  def dispatch(fetchRequest: FetchRequest): Task[FetchReply] = {
-    val send = (slaveRef: SlaveRef, fetchRequest: FetchRequest) => slaveRef.stub.fetch(fetchRequest)
-    dispatch(fetchRequest, send, FetchReply.defaultInstance)
+  def dispatch[Proto, View](fetchRequest: FetchRequest)(implicit F: Fetch[Proto, View]): Task[View] = {
+    logger.debug("Dispatching fetch branches")
+    dispatch[FetchRequest, Proto](fetchRequest, F.send, F.defaultInstance).map(F.toView(_))
   }
 
   def dispatch[E, R](event: E, send: (SlaveRef, E) => Future[R], fallback: R): Task[R] = {
@@ -75,4 +78,7 @@ class Dispatcher(implicit config: MasterConfig) extends LazyLogging{
       }
     } yield joinReq
   }
+
 }
+
+

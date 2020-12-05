@@ -7,14 +7,15 @@ import monix.connect.redis.RedisSet
 import monix.eval.Task
 import monix.execution.Scheduler
 import monix.mini.platform.protocol.SlaveProtocolGrpc.SlaveProtocol
-import monix.mini.platform.slave.PersistanceRepository.{connection, operationsCol, transactionsCol}
+import monix.mini.platform.slave.PersistanceRepository.{connection, operationsCol, transactionsCol, interactionsKey, branchesKey}
 import monix.mini.platform.protocol._
 import monix.mini.platform.slave.config.SlaveConfig
 import com.mongodb.client.model.Filters
 
 import scala.concurrent.Future
 
-class GrpcServer(implicit config: SlaveConfig, scheduler: Scheduler) extends LazyLogging { self =>
+class GrpcServer(implicit config: SlaveConfig, scheduler: Scheduler) extends LazyLogging {
+  self =>
 
   private[this] var server: Server = null
 
@@ -47,31 +48,69 @@ class GrpcServer(implicit config: SlaveConfig, scheduler: Scheduler) extends Laz
       logger.info(s"Received operation event: ${operationEvent}")
       (for {
         _ <- MongoOp.insertOne(operationsCol, operationEvent.toEntity)
-        _ <- RedisSet.sadd(s"location-${operationEvent.client}", operationEvent.location)
+        _ <- RedisSet.sadd(branchesKey(operationEvent.client), operationEvent.branch)
       } yield EventResult.of(ResultStatus.INSERTED))
         .runToFuture
     }
 
     override def transaction(transactionEvent: TransactionEvent): Future[EventResult] = {
       logger.info(s"Received transaction event: ${transactionEvent}")
+
       (for {
         _ <- MongoOp.insertOne(transactionsCol, transactionEvent.toEntity)
-        _ <- RedisSet.sadd(s"interactions-${transactionEvent.sender}", transactionEvent.receiver)
+        _ <- RedisSet.sadd(interactionsKey(transactionEvent.sender), transactionEvent.receiver)
       } yield EventResult.of(ResultStatus.INSERTED))
-        .onErrorHandleWith { ex => logger.error(s"Transaction failed with ex", ex)
+        .onErrorHandleWith { ex =>
+          logger.error(s"Transaction failed with exception:", ex)
           Task.raiseError(ex)
         }
         .runToFuture
     }
 
-    override def fetch(request: FetchRequest): Future[FetchReply] = {
-      logger.info(s"Received fetch request: ${request}")
+    override def fetchAll(request: FetchRequest): Future[FetchAllReply] = {
+      logger.debug(s"Received fetch request: ${request}")
       (for {
         transactions <- MongoSource.find(transactionsCol, Filters.eq("sender", request.client)).map(_.toProto).toListL
         operations <- MongoSource.find(operationsCol, Filters.eq("client", request.client)).map(_.toProto).toListL
-      } yield FetchReply.of(transactions, operations))
+        interactions <- RedisSet.smembers(interactionsKey(request.client)).toListL
+        branches <- RedisSet.smembers(branchesKey(request.client)).toListL
+      } yield FetchAllReply.of(transactions, operations, interactions, branches))
         .runToFuture
     }
 
+    override def fetchTransactions(request: FetchRequest): Future[FetchTransactionsReply] = {
+      logger.debug(s"Received fetch transactions request: ${request}")
+      MongoSource.find(transactionsCol, Filters.eq("sender", request.client))
+        .map(_.toProto)
+        .toListL
+        .map(FetchTransactionsReply.of)
+        .runToFuture
+    }
+
+    override def fetchOperations(request: FetchRequest): Future[FetchOperationsReply] = {
+      logger.debug(s"Received fetch operations request: ${request}")
+      MongoSource.find(operationsCol, Filters.eq("client", request.client))
+        .map(_.toProto)
+        .toListL
+        .map(FetchOperationsReply.of)
+        .runToFuture
+    }
+
+    override def fetchInteractions(request: FetchRequest): Future[FetchInteractionsReply] = {
+      logger.debug(s"Received fetch interactions request: ${request}")
+      RedisSet.smembers(interactionsKey(request.client))
+        .toListL
+        .map(FetchInteractionsReply.of)
+        .runToFuture
+    }
+
+    override def fetchBranches(request: FetchRequest): Future[FetchBranchesReply] = {
+      RedisSet.smembers(branchesKey(request.client))
+        .toListL
+        .map(FetchBranchesReply.of)
+        .runToFuture
+    }
   }
+
 }
+

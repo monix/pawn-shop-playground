@@ -11,7 +11,7 @@ object GrpcClient {
     //grpc client
     val channel = ManagedChannelBuilder.forAddress(config.masterServer.host, config.masterServer.port).usePlaintext().build()
     val masterStub = MasterProtocolGrpc.stub(channel)
-    val slaveInfo = SlaveInfo.of("slave1", config.grpcServer.host, config.grpcServer.port)
+    val slaveInfo = SlaveInfo.of(config.slaveId, config.grpcServer.host, config.grpcServer.port)
     Task.fromFuture(masterStub.join(JoinRequest.of(Some(slaveInfo))))
   }
 
