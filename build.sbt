@@ -29,6 +29,13 @@ lazy val slave = (project in file("slave"))
   .aggregate(common)
   .dependsOn(common)
 
+lazy val feeder = (project in file("feeder"))
+  .settings(
+    name := "monix-feeder",
+    libraryDependencies ++= FeederDependencies,
+    version := Version.version
+  ).enablePlugins(JavaAppPackaging, DockerPlugin)
+
 lazy val common = (project in file("common"))
   .settings(
     name := "monix-common",

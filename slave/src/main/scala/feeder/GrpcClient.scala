@@ -1,8 +1,8 @@
-package monix.mini.platform.slave
+package monix.mini.platform.feeder
 
 import io.grpc.ManagedChannelBuilder
 import monix.eval.Task
-import monix.mini.platform.slave.SlaveApp.config
+import monix.mini.platform.feeder.SlaveApp.config
 import monix.mini.platform.protocol.{JoinReply, JoinRequest, MasterProtocolGrpc, SlaveInfo}
 
 object GrpcClient {

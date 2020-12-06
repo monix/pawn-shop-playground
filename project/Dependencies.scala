@@ -40,7 +40,8 @@ object Dependencies {
     "com.typesafe.scala-logging"    %% "scala-logging" % DependencyVersions.ScalaLogging,
     "ch.qos.logback" % "logback-classic" % "1.2.3",
     "com.github.pureconfig"     %% "pureconfig"            % DependencyVersions.PureConfig,
-    "io.github.scalapb-json" %% "scalapb-circe" % "0.7.2"
+    "io.github.scalapb-json" %% "scalapb-circe" % "0.7.2",
+    "io.monix" %% "monix-bio" % "1.1.0"
   )
 
   val SlaveDependencies: Seq[ModuleID] =Seq(
@@ -53,7 +54,21 @@ object Dependencies {
     "io.monix" %% "monix-redis" % DependencyVersions.MonixConnect,
     "com.typesafe.scala-logging" %% "scala-logging" % DependencyVersions.ScalaLogging,
     "ch.qos.logback" % "logback-classic" % "1.2.3",
-    "com.github.pureconfig"     %% "pureconfig"            % DependencyVersions.PureConfig
+    "com.github.pureconfig"     %% "pureconfig"            % DependencyVersions.PureConfig,
+    "io.monix" %% "monix-bio" % "1.1.0"
+  )
+
+  val FeederDependencies: Seq[ModuleID] = Seq(
+    "io.monix"                  %% "monix"                 % DependencyVersions.Monix,
+    "io.monix"                  %% "monix-s3"         % DependencyVersions.MonixConnect,
+    "io.monix" %% "monix-redis" % DependencyVersions.MonixConnect,
+    "com.typesafe.scala-logging" %% "scala-logging" % DependencyVersions.ScalaLogging,
+    "ch.qos.logback" % "logback-classic" % "1.2.3",
+    "com.github.pureconfig"     %% "pureconfig"            % DependencyVersions.PureConfig,
+    "io.monix" %% "monix-bio" % "1.1.0",
+    "io.circe"                  %% "circe-core"            % DependencyVersions.Circe,
+    "io.circe"                  %% "circe-generic"         % DependencyVersions.Circe,
+    "io.circe"                  %% "circe-parser"          % DependencyVersions.Circe,
   )
 
   val CommonDependencies: Seq[ModuleID] =Seq(

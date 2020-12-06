@@ -1,11 +1,11 @@
-package monix.mini.platform.slave
+package monix.mini.platform.feeder
 
 import cats.effect.ExitCode
 import com.typesafe.scalalogging.LazyLogging
 import monix.eval.{Task, TaskApp}
 import monix.execution.Scheduler.Implicits.global
 import monix.mini.platform.protocol.{JoinReply, JoinResponse}
-import monix.mini.platform.slave.config.SlaveConfig
+import monix.mini.platform.feeder.config.SlaveConfig
 
 object SlaveApp extends TaskApp with LazyLogging {
 

@@ -10,9 +10,9 @@
     </appender>
 
     <logger name="chapters.configuration" level="INFO" />
-    <logger name="chapters.configuration.Foo" level="DEBUG" />
+    <logger name="chapters.configuration.Foo" level="INFO" />
 
-    <root level="DEBUG">
+    <root level="INFO">
         <appender-ref ref="STDOUT" />
     </root>
 

@@ -1,8 +1,8 @@
-package monix.mini.platform.slave
+package monix.mini.platform.feeder
 
 import monix.mini.platform.protocol.OperationType
-import org.bson.{BsonReader, BsonWriter}
 import org.bson.codecs.{Codec, DecoderContext, EncoderContext}
+import org.bson.{BsonReader, BsonWriter}
 
 class OperationTypeCodec extends Codec[OperationType] {
 
@@ -12,7 +12,6 @@ class OperationTypeCodec extends Codec[OperationType] {
 
  override def decode (reader: BsonReader, decoderContext: DecoderContext): OperationType = {
    val value = reader.readString();
-   println("Codec value: " + value)
    OperationType.fromName(value).get
  }
 

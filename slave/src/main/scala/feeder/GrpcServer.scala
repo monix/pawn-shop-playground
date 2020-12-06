@@ -1,4 +1,4 @@
-package monix.mini.platform.slave
+package monix.mini.platform.feeder
 
 import com.typesafe.scalalogging.LazyLogging
 import io.grpc.{Server, ServerBuilder}
@@ -7,9 +7,9 @@ import monix.connect.redis.RedisSet
 import monix.eval.Task
 import monix.execution.Scheduler
 import monix.mini.platform.protocol.SlaveProtocolGrpc.SlaveProtocol
-import monix.mini.platform.slave.PersistanceRepository.{connection, operationsCol, transactionsCol, interactionsKey, branchesKey}
+import monix.mini.platform.feeder.PersistanceRepository.{connection, operationsCol, transactionsCol, interactionsKey, branchesKey}
 import monix.mini.platform.protocol._
-import monix.mini.platform.slave.config.SlaveConfig
+import monix.mini.platform.feeder.config.SlaveConfig
 import com.mongodb.client.model.Filters
 
 import scala.concurrent.Future

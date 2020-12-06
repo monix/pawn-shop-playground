@@ -1,6 +1,6 @@
-package monix.mini.platform.slave.config
+package monix.mini.platform.feeder.config
 
-import monix.mini.platform.slave.config.SlaveConfig.{GrpcServerConfig, MongoDbConfig, RedisConfig}
+import monix.mini.platform.feeder.config.SlaveConfig.{GrpcServerConfig, MongoDbConfig, RedisConfig}
 import pureconfig._
 import pureconfig.generic.ProductHint
 import pureconfig.generic.auto._
