@@ -1,29 +1,60 @@
-# mini-platform
+# Mini Platform
 
-This project aims to show a real case example of a mini microservices platform that is heavily based in monix and its subprojects.
+This project aims to show a **real example** of a mini microservices platform in the _financial services domain_ that is heavily _built up_ mostly with in _monix and its subprojects_.
 
-The platform is composed by the following applications, the master, slave, the provider and archiver. (see monix-mini-platform.png) 
+AThe platform entry point is an http endpoint that expects **transaction** and **operation** events to be sent
+    - [Transaction](https://github.com/monix/mini-platform/blob/master/common/src/main/protobuf/protocol.proto#L35):
+     Represents the client's action of sending a certain amount of money (transfering) to a different client. 
+    - [Operation](https://github.com/monix/mini-platform/blob/master/common/src/main/protobuf/protocol.proto#L23):
+     Represents the client's action of either doing a *deposit* or *withdraw*, and has to be physically done form one of the branches.
+     
+From these operation we can identify and register adjacent data, like the **interactions** with different clients when performing a transaction
+ or the **branch** where an operation was realized. 
+ 
+Apart of sending events, the http endpoint also exposes get operations to fetch the processed data, providing different alternatives to do so:
+Fetch all the data or only (transactions, operations, interactions or branches) of an specific client.
 
-1 - **Master**: The core of the platform is the master server, which expect data to be sent through some external http endpoints. 
-	It also implements a grpc server that expects _JoinRequests_ to be sent from the slaves, allowing to dynamically add new to the quorum.
-	There is no interaction to the database from the master, instead it asks the slaves to do that work.
-	As a bank backend service, we expect _transactions_ and _operations_ to be sent directly from the client applications, 
-	    - _Transaction_: It is any money movement between two clients, having then a `sender` and `receiver` of a certain amount of money.  
-	    - _Operation_: On the other hand, the operation is the action of either doing a _deposit_ or _withdraw_, and it is 
-	     identified by a single client that has to physically be present in one of the branches.
-	      
-	Back to the technical details, the master also acts as a grpc client that sends _transactions_, _operations_ and _fetch_ requests to
-	the slaves. 
-	It will implement an internal grpc load balancer (i.e using Round Robin) to alternate requests between the different _slaves_.
+Now that we have already introduced a bit the domain, let's jum to the technical overview and design:
 
-2 - **Slaves**: Can be added on demand, they will send a manifest grpc call to the master once they are added.
-			Also implement a grpc stub that expects calls from the master to fetch and persist data.
+The mini platform is composed by mainly three different components, the _master_, _slave_ and the _feeder_. 
+They represent different type of applications which will be running in docker containers environment have its own purpose.   
 
-3 - **Archiver**: A service that reads from the `long_term_storage` kafka topic, and buffers till X events have been consumed, then it uploads them to S3.
 
+![Mini Platform Diagram](/mini-platform-diagram.png)
+
+
+### Master
+ 
+ The core of the platform, it represents the http entry point that expects bank transactions/operations events, it is also
+ caracterized for not implementing any database access, instead it communicates to the slaves via _gRPC_ *proto*cols to let them do the hard work. 
+ Grpc server: Implements a grpc endpoint that expects `JoinRequests` to be sent from the slaves, returning the `JoinResponse` which 
+ can be either `Joined` or `Rejected`. Allowing to dynamically add new slaves to the cluster, and providing scalability to the platform.
+ Grpc client: The master also acts as a grpc client that sends _transactions_, _operations_ and _fetch_ requests to
+	the slaves. It will implement an internal grpc load balancer (i.e using Round Robin) to alternate requests between the existing _slaves_.
+
+### Slaves
+
+They can be added on demand, scalable depending on the work flow. 
+Just right after starting the app, they will send the _JoinRequest_ grpc call to the master.
+Then, once the Slave is part of the cluster, it will expect calls from the master to fetch and persist data.
+    - Transaction/Operation Events: The different events will be persisted respectively in their _MongoDB_ collections for its later access, 
+        but before that, the slave will check in _Redis_ whether the client that the money is being send (in transactions) or the client that 
+        performs the withdraw (in operation) is a fraudster or not. In case it is, the event is marked as `Fraudulent` and not persisted in the db.
+      In case the client was not identified as a fraudster, the event will be persisted in Mongo and the _interactions_ and _branches_ information in _Redis_ for
+      its future faster access.   
+    - Fetch: There are defined different http endpoints for retreiving all the data or only the _transactions_, _operations_, _interactions_ or _branches_ of an specific client.
+
+
+### Feeder 
+
+A microservice that feeds _Redis_ with a list of _Fraudulent_ people that is downloaded from a datasource stored in _S3_.
 
 	
-4 - Future plans:
+
+### Future plans:
+ - Write tests and create a CI pipeline.
  - If a write to the master failed or took more than X time, the master will cache that event to redis temporarly, 
 and there will be a scheduled job that checks if there is cached data, and if so, it will try to send them to one of the slaves again.
 - At the end of each request, we will send to the kafka `long_term_storage` topic.
+- Refactor the master and slave apps to read the config files in a safe way, as how currently the feeder does, using `monix.bio.IO` that
+will and returning `IO[ConfigurationErrors, Config]` instead of using `loadOrThrow`. 

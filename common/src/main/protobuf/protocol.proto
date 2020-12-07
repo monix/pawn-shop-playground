@@ -92,7 +92,8 @@ enum FetchType {
 enum ResultStatus {
   INSERTED = 0;
   DUPLICATED = 1;
-  FAILED = 2;
+  FRAUDULENT = 2;
+  FAILED = 3;
 }
 
 //join

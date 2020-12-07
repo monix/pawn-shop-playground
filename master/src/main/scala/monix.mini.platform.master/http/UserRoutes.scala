@@ -27,25 +27,25 @@ trait UserRoutes extends Http4sDsl[Task] with LazyLogging {
     case _ @ GET -> Root => Ok("Monix Mini Platform")
 
     case _ @ GET -> Root / "fetch" / "all" / client => {
-      logger.info(s"Read one received request.")
+      logger.info(s"Fetch all request received.")
       dispatcher.dispatch(FetchRequest.of(client))(allFetch)
         .map(Response(status = Ok).withEntity(_))
     }
 
     case _ @ GET -> Root / "fetch" / "transactions" / client => {
-      logger.info(s"Read one received request.")
+      logger.info(s"Fetch transactions request received.")
       dispatcher.dispatch(FetchRequest.of(client))(transactionsFetch)
         .map(Response(status = Ok).withEntity(_))
     }
 
     case _ @ GET -> Root / "fetch" / "operations" / client => {
-      logger.info(s"Read one received request.")
+      logger.info(s"Fetch operations request received.")
       dispatcher.dispatch(FetchRequest.of(client))(operationsFetch)
         .map(Response(status = Ok).withEntity(_))
     }
 
     case _ @ GET -> Root / "fetch" / "interactions" / client => {
-      logger.info(s"Read one received request.")
+      logger.info(s"Fetch interactions request received.")
       dispatcher.dispatch(FetchRequest.of(client))(interactionsFetch)
         .map(Response(status = Ok).withEntity(_))
     }
@@ -60,8 +60,10 @@ trait UserRoutes extends Http4sDsl[Task] with LazyLogging {
       val insertRequest: Task[TransactionEvent] = req.as[TransactionEventEntity].map(_.toProto)
       logger.info(s"Transaction received one received")
       insertRequest.flatMap(dispatcher.dispatch(_)).map {
-        case EventResult(ResultStatus.INSERTED, _) =>  Response(status = Ok).withEntity(ResultStatus.INSERTED.toString())
+        case EventResult(ResultStatus.FRAUDULENT, _) =>  Response(status = Unauthorized).withEntity(ResultStatus.FRAUDULENT.toString())
         case EventResult(ResultStatus.FAILED, _)  =>  Response(status = NotFound).withEntity(ResultStatus.FAILED.toString())
+        case EventResult(status, _) =>  Response(status = Ok).withEntity(status.toString())
+
       }
     }
 

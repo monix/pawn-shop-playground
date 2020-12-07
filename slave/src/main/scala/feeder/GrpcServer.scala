@@ -47,19 +47,26 @@ class GrpcServer(implicit config: SlaveConfig, scheduler: Scheduler) extends Laz
     override def operation(operationEvent: OperationEvent): Future[EventResult] = {
       logger.info(s"Received operation event: ${operationEvent}")
       (for {
-        _ <- MongoOp.insertOne(operationsCol, operationEvent.toEntity)
+        isFraudster <- RedisSet.sismember(config.redis.fraudstersKey, operationEvent.client)
+        status <- {
+          if(isFraudster) Task.now(ResultStatus.FRAUDULENT)
+          else MongoOp.insertOne(operationsCol, operationEvent.toEntity).as(ResultStatus.INSERTED)
+        }
         _ <- RedisSet.sadd(branchesKey(operationEvent.client), operationEvent.branch)
-      } yield EventResult.of(ResultStatus.INSERTED))
+      } yield EventResult.of(status))
         .runToFuture
     }
 
     override def transaction(transactionEvent: TransactionEvent): Future[EventResult] = {
       logger.info(s"Received transaction event: ${transactionEvent}")
-
       (for {
-        _ <- MongoOp.insertOne(transactionsCol, transactionEvent.toEntity)
+        isFraudster <- RedisSet.sismember(config.redis.fraudstersKey, transactionEvent.receiver)
+        status <- {
+          if(isFraudster) Task.now(ResultStatus.FRAUDULENT)
+          else MongoOp.insertOne(transactionsCol, transactionEvent.toEntity).as(ResultStatus.INSERTED)
+        }
         _ <- RedisSet.sadd(interactionsKey(transactionEvent.sender), transactionEvent.receiver)
-      } yield EventResult.of(ResultStatus.INSERTED))
+      } yield EventResult.of(status))
         .onErrorHandleWith { ex =>
           logger.error(s"Transaction failed with exception:", ex)
           Task.raiseError(ex)

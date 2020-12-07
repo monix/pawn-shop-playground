@@ -23,11 +23,10 @@ object PersistanceRepository {
   val operationsCol = db.getCollection(mongodb.operationsCollectionName, classOf[OperationEventEntity])
     .withCodecRegistry(codecRegistry)
 
-  def interactionsKey(sender: String) = s"${redis.interactionsKeyPrefix}$sender"
-  def branchesKey(branch: String) = s"${redis.branchesKeyPrefix}$branch"
-
   //redis
   val redisClient: RedisClient = RedisClient.create(redis.url)
   implicit val connection: StatefulRedisConnection[String, String] = redisClient.connect()
+  def interactionsKey(sender: String) = s"${redis.interactionsKeyPrefix}$sender"
+  def branchesKey(branch: String) = s"${redis.branchesKeyPrefix}$branch"
 
 }

@@ -28,7 +28,8 @@ object SlaveConfig {
                          port: Int,
                          url: String,
                          interactionsKeyPrefix: String,
-                         branchesKeyPrefix: String)
+                         branchesKeyPrefix: String,
+                         fraudstersKey: String)
 
 }
 
