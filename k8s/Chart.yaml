@@ -1,6 +1,6 @@
 apiVersion: v2
-name: master
-description: Monix Mini Platform Master
+name: mini-platform
+description: Monix Mini Platform
 type: application
 version: 0.1.0
 appVersion: 0.1.0

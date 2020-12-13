@@ -3,11 +3,11 @@ syntax = "proto3";
 package monix.mini.platform;
 
 //Master slave service definition
-service MasterProtocol {
+service DispatcherProtocol {
   rpc join (JoinRequest) returns (JoinReply) {}
 }
 
-service SlaveProtocol {
+service WorkerProtocol {
   //insert protocol
   rpc operation (OperationEvent) returns (EventResult) {}
   rpc transaction (TransactionEvent) returns (EventResult) {}
@@ -98,11 +98,11 @@ enum ResultStatus {
 
 //join
 message JoinRequest {
- SlaveInfo slaveInfo = 1;
+ WorkerInfo workerInfo = 1;
 }
 
-message SlaveInfo {
-  string slave_id = 1;
+message WorkerInfo {
+  string worker_id = 1;
   string host = 2;
   int32 port = 3;
 }

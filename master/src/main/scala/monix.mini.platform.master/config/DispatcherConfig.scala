@@ -3,7 +3,7 @@ package monix.mini.platform.config
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter.ISO_DATE
 
-import MasterConfig.{ GrpcServerConfiguration, HttpServerConfiguration }
+import DispatcherConfig.{ GrpcServerConfiguration, HttpServerConfiguration }
 import io.circe._
 import io.circe.generic.auto._
 import io.circe.generic.semiauto._
@@ -15,21 +15,21 @@ import pureconfig.generic.auto._
 
 import scala.concurrent.duration.FiniteDuration
 
-case class MasterConfig(httpServer: HttpServerConfiguration, grpcTimeout: FiniteDuration, grpcServer: GrpcServerConfiguration) {
+case class DispatcherConfig(httpServer: HttpServerConfiguration, grpcTimeout: FiniteDuration, grpcServer: GrpcServerConfiguration) {
   def toJson: String = this.asJson.noSpaces
 }
 
-object MasterConfig {
+object DispatcherConfig {
 
-  implicit val confHint: ProductHint[MasterConfig] = ProductHint[MasterConfig](ConfigFieldMapping(CamelCase, KebabCase))
+  implicit val confHint: ProductHint[DispatcherConfig] = ProductHint[DispatcherConfig](ConfigFieldMapping(CamelCase, KebabCase))
 
   implicit val localDateConvert: ConfigConvert[LocalDate] = localDateConfigConvert(ISO_DATE)
 
-  implicit val encodeAppConfig: Encoder[MasterConfig] = deriveEncoder
+  implicit val encodeAppConfig: Encoder[DispatcherConfig] = deriveEncoder
   implicit val encodeDuration: Encoder[FiniteDuration] = Encoder.instance(duration ⇒ Json.fromString(duration.toString))
   implicit val encodeLocalDate: Encoder[LocalDate] = Encoder.instance(date ⇒ Json.fromString(date.format(ISO_DATE)))
 
-  def load(): MasterConfig = loadConfigOrThrow[MasterConfig]
+  def load(): DispatcherConfig = loadConfigOrThrow[DispatcherConfig]
 
   case class HttpServerConfiguration(
     host: String,

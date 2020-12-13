@@ -1,19 +1,19 @@
-package monix.mini.platform.slave.config
+package monix.mini.platform.worker.config
 
-import SlaveConfig.{ GrpcServerConfig, MongoDbConfig, RedisConfig }
+import WorkerConfig.{ GrpcServerConfig, MongoDbConfig, RedisConfig }
 import pureconfig._
 import pureconfig.generic.ProductHint
 import pureconfig.generic.auto._
 
 import scala.concurrent.duration.FiniteDuration
 
-case class SlaveConfig(slaveId: String, grpcTimeout: FiniteDuration, joinRequestRetries: Int, grpcServer: GrpcServerConfig, masterServer: GrpcServerConfig, mongodb: MongoDbConfig, redis: RedisConfig)
+case class WorkerConfig(slaveId: String, grpcTimeout: FiniteDuration, joinRequestRetries: Int, grpcServer: GrpcServerConfig, dispatcherServer: GrpcServerConfig, mongodb: MongoDbConfig, redis: RedisConfig)
 
-object SlaveConfig {
+object WorkerConfig {
 
-  implicit val confHint: ProductHint[SlaveConfig] = ProductHint[SlaveConfig](ConfigFieldMapping(CamelCase, KebabCase))
+  implicit val confHint: ProductHint[WorkerConfig] = ProductHint[WorkerConfig](ConfigFieldMapping(CamelCase, KebabCase))
 
-  def load(): SlaveConfig = loadConfigOrThrow[SlaveConfig]
+  def load(): WorkerConfig = loadConfigOrThrow[WorkerConfig]
 
   case class GrpcServerConfig(
     host: String,

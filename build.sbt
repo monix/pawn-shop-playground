@@ -13,11 +13,11 @@ lazy val root = (project in file("."))
     name := "monix-mini-platform"
   ).enablePlugins(DockerPlugin, JavaAppPackaging)
 
-lazy val master = (project in file("master"))
+lazy val dispatcher = (project in file("dispatcher"))
   .settings(
-    name := "master",
-    libraryDependencies ++= MasterDependencies,
-    version := Version.masterVersion,
+    name := "dispatcher",
+    libraryDependencies ++= DispatcherDependencies,
+    version := Version.dispatcherVersion,
     maintainer in Docker := "Pau Alarcón",
     dockerUsername in Docker := Some("paualarco"),
     dockerBaseImage in Docker := "golang:1.10-alpine3.7"
@@ -26,11 +26,11 @@ lazy val master = (project in file("master"))
   .dependsOn(common)
   .enablePlugins(DockerPlugin, JavaAppPackaging)
 
-lazy val slave = (project in file("slave"))
+lazy val worker = (project in file("worker"))
   .settings(
-    name := "slave",
-    libraryDependencies ++= SlaveDependencies,
-    version := Version.slaveVersion,
+    name := "worker",
+    libraryDependencies ++= WorkerDependencies,
+    version := Version.workerVersion,
     maintainer in Docker := "Pau Alarcón",
     dockerUsername in Docker := Some("paualarco"),
   )

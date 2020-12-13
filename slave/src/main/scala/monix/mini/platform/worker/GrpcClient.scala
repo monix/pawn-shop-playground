@@ -1,8 +1,8 @@
-package monix.mini.platform.slave
+package monix.mini.platform.worker
 
 import io.grpc.ManagedChannelBuilder
 import monix.eval.Task
-import SlaveApp.config
+import WorkerApp.config
 import com.typesafe.scalalogging.LazyLogging
 import monix.mini.platform.protocol.{ JoinReply, JoinRequest, MasterProtocolGrpc, SlaveInfo }
 import scala.concurrent.duration._
@@ -11,7 +11,7 @@ object GrpcClient extends LazyLogging {
 
   def sendJoinRequest(retries: Int): Task[JoinReply] = {
     //grpc client
-    val channel = ManagedChannelBuilder.forAddress(config.masterServer.host, config.masterServer.port).usePlaintext().build()
+    val channel = ManagedChannelBuilder.forAddress(config.dispatcherServer.host, config.dispatcherServer.port).usePlaintext().build()
     val masterStub = MasterProtocolGrpc.stub(channel)
     val slaveInfo = SlaveInfo.of(config.slaveId, config.grpcServer.host, config.grpcServer.port)
     Task.fromFuture(masterStub.join(JoinRequest.of(Some(slaveInfo))))

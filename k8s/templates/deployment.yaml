@@ -12,48 +12,48 @@ spec:
   template:
     metadata:
       labels:
-        app: master
+        app: dispatcher
     spec:
       containers:
-        - name: master
-          image: "{{ .Values.master.image.repository }}:{{ .Values.master.image.tag }}"
+        - name: dispatcher
+          image: "{{ .Values.dispatcher.image.repository }}:{{ .Values.dispatcher.image.tag }}"
           env:
-            {{- range $key, $value := .Values.master.appConfig }}
+            {{- range $key, $value := .Values.dispatcher.appConfig }}
             - name: {{ $key | snakecase | upper }}
               value: {{ $value | quote }}
             {{- end}}
-          imagePullPolicy: {{ .Values.master.image.pullPolicy }}
+          imagePullPolicy: {{ .Values.dispatcher.image.pullPolicy }}
           resources:
-            {{- toYaml .Values.master.resources | nindent 12 }}
+            {{- toYaml .Values.dispatcher.resources | nindent 12 }}
 ---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: slave
+  name: worker
   labels:
-    app: slave
+    app: worker
 spec:
-  replicas: {{ .Values.slave.replicas }}
+  replicas: {{ .Values.worker.replicas }}
   selector:
     matchLabels:
-      app: slave
+      app: worker
   template:
     metadata:
       labels:
-        app: slave
+        app: worker
     spec:
       containers:
         - name: slave
-          image: "{{ .Values.slave.image.repository }}:{{ .Values.slave.image.tag }}"
+          image: "{{ .Values.worker.image.repository }}:{{ .Values.worker.image.tag }}"
           env:
           - name: GRPC_SERVER_HOST
             valueFrom:
               fieldRef:
                 fieldPath: status.podIP
-          {{- range $key, $value := .Values.slave.appConfig }}
+          {{- range $key, $value := .Values.worker.appConfig }}
           - name: {{ $key | snakecase | upper }}
             value: {{ $value | quote }}
           {{- end}}
-          imagePullPolicy: {{ .Values.slave.image.pullPolicy }}
+          imagePullPolicy: {{ .Values.worker.image.pullPolicy }}
           resources:
-            {{- toYaml .Values.slave.resources | nindent 12 }}
+            {{- toYaml .Values.worker.resources | nindent 12 }}

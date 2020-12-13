@@ -5,12 +5,12 @@ import io.grpc.protobuf.services.ProtoReflectionService
 import io.grpc.{ Server, ServerBuilder }
 import monix.eval.Task
 import monix.execution.{ CancelableFuture, Scheduler }
-import monix.mini.platform.config.MasterConfig
-import monix.mini.platform.master.MasterApp.{ config, logger }
+import monix.mini.platform.config.DispatcherConfig
+import monix.mini.platform.master.DispatcherApp.{ config, logger }
 import monix.mini.platform.protocol.MasterProtocolGrpc.MasterProtocol
 import monix.mini.platform.protocol.{ JoinReply, JoinRequest, JoinResponse }
 
-class GrpcServer(dispatcher: Dispatcher)(implicit config: MasterConfig, scheduler: Scheduler) extends LazyLogging { self =>
+class GrpcServer(dispatcher: Dispatcher)(implicit config: DispatcherConfig, scheduler: Scheduler) extends LazyLogging { self =>
 
   private[this] var server: Server = null
 

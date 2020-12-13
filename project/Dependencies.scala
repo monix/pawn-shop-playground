@@ -23,7 +23,7 @@ object Dependencies {
     "org.scalacheck"            %% "scalacheck"            % DependencyVersions.Scalacheck
   ).map( _ % Test)
 
-  val MasterDependencies: Seq[ModuleID] =Seq(
+  val DispatcherDependencies: Seq[ModuleID] =Seq(
     "io.grpc" % "grpc-netty-shaded" % scalapb.compiler.Version.grpcJavaVersion,
     "io.grpc" % "grpc-services" % scalapb.compiler.Version.grpcJavaVersion,
     "io.grpc"                   % "grpc-netty"             % scalapb.compiler.Version.grpcJavaVersion,
@@ -45,7 +45,7 @@ object Dependencies {
     "io.monix" %% "monix-bio" % "1.1.0"
   )
 
-  val SlaveDependencies: Seq[ModuleID] =Seq(
+  val WorkerDependencies: Seq[ModuleID] =Seq(
     "io.grpc" % "grpc-netty-shaded" % scalapb.compiler.Version.grpcJavaVersion,
     "io.grpc"                   % "grpc-netty"             % scalapb.compiler.Version.grpcJavaVersion,
     "com.thesamet.scalapb"      %% "scalapb-runtime-grpc"  % scalapb.compiler.Version.scalapbVersion,

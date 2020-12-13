@@ -2,34 +2,34 @@
 
 podAnnotations: {}
 
-master:
+dispatcher:
   appConfig:
     httpServerHost: "0.0.0.0"
     httpServerPort: 8080
     grpcTimeout: 3seconds
   image:
-    repository: docker.io/paualarco/master
+    repository: docker.io/paualarco/dispatcher
     pullPolicy: IfNotPresent
     tag: "0.1.17"
   replicas: 1
   resources:
     limits:
-      cpu: 400m
+      cpu: 300m
       memory: 128Mi
     requests:
       cpu: 100m
       memory: 128Mi
 
-slave:
+worker:
   appConfig:
-    masterServerHost: master-svc
-    masterServerPort: 9081
+    dispatcherServerHost: master-svc
+    dispatcherServerPort: 9081
     grpcTimeout: 15seconds
     joinRequestRetries: 10
     redisHost: redis-master
     mongoHost: mongo-mongodb
   image:
-    repository: docker.io/paualarco/slave
+    repository: docker.io/paualarco/worker
     pullPolicy: IfNotPresent
     tag: "0.1.4"
   replicas: 1

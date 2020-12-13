@@ -6,15 +6,15 @@ import monix.eval.{ Task, TaskApp }
 import monix.execution.ExecutionModel
 import org.http4s.implicits._
 import org.http4s.server.blaze._
-import monix.mini.platform.config.MasterConfig
+import monix.mini.platform.config.DispatcherConfig
 import monix.mini.platform.master.http.UserRoutes
 import monix.execution.Scheduler.Implicits.global
 
 import scala.concurrent.duration._
 
-object MasterApp extends TaskApp with UserRoutes with LazyLogging {
+object DispatcherApp extends TaskApp with UserRoutes with LazyLogging {
 
-  implicit val config: MasterConfig = MasterConfig.load()
+  implicit val config: DispatcherConfig = DispatcherConfig.load()
 
   logger.info(s"Starting master server with config: $config")
 

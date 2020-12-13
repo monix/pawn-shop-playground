@@ -1,10 +1,10 @@
 kind: Service
 apiVersion: v1
 metadata:
-  name: master-svc
+  name: dispatcher-svc
 spec:
   selector:
-    app: master
+    app: dispatcher
   ports:
     - name: http
       port: 80
@@ -18,9 +18,9 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: slave-svc
+  name: worker-svc
   labels:
-    app: slave
+    app: worker
 spec:
   type: ClusterIP
   ports:
@@ -28,4 +28,4 @@ spec:
       port: 9082
       targetPort: 9082
   selector:
-    app: slave
+    app: worker

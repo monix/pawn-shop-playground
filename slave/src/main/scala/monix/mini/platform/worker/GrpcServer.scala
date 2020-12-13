@@ -1,4 +1,4 @@
-package monix.mini.platform.slave
+package monix.mini.platform.worker
 
 import com.typesafe.scalalogging.LazyLogging
 import io.grpc.{ Server, ServerBuilder }
@@ -7,14 +7,14 @@ import monix.connect.redis.RedisSet
 import monix.eval.Task
 import monix.execution.Scheduler
 import monix.mini.platform.protocol.SlaveProtocolGrpc.SlaveProtocol
-import monix.mini.platform.slave.PersistanceRepository.{ branchesKey, connection, interactionsKey, operationsCol, transactionsCol }
+import monix.mini.platform.worker.PersistanceRepository.{ branchesKey, connection, interactionsKey, operationsCol, transactionsCol }
 import monix.mini.platform.protocol._
 import com.mongodb.client.model.Filters
-import monix.mini.platform.slave.config.SlaveConfig
+import monix.mini.platform.worker.config.WorkerConfig
 
 import scala.concurrent.Future
 
-class GrpcServer(implicit config: SlaveConfig, scheduler: Scheduler) extends LazyLogging {
+class GrpcServer(implicit config: WorkerConfig, scheduler: Scheduler) extends LazyLogging {
   self =>
 
   private[this] var server: Server = null

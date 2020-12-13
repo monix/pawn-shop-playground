@@ -1,19 +1,19 @@
-package monix.mini.platform.slave
+package monix.mini.platform.worker
 
 import cats.effect.ExitCode
 import com.typesafe.scalalogging.LazyLogging
 import monix.eval.{ Task, TaskApp }
 import monix.execution.Scheduler.Implicits.global
 import monix.mini.platform.protocol.{ JoinReply, JoinResponse }
-import monix.mini.platform.slave.config.SlaveConfig
+import monix.mini.platform.worker.config.WorkerConfig
 
-object SlaveApp extends TaskApp with LazyLogging {
+object WorkerApp extends TaskApp with LazyLogging {
 
-  implicit val config: SlaveConfig = SlaveConfig.load()
+  implicit val config: WorkerConfig = WorkerConfig.load()
 
   def run(args: List[String]): Task[ExitCode] = {
 
-    logger.info(s"Starting slave with config: $config")
+    logger.info(s"Starting worker with config: $config")
 
     logger.info(s"Starting grpc server on endpoint: ${config.grpcServer.endPoint}")
 
