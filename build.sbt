@@ -1,44 +1,55 @@
 import Dependencies._
+import com.typesafe.sbt.SbtNativePackager.autoImport.maintainer
+import com.typesafe.sbt.packager.docker.DockerVersion
 
 lazy val root = (project in file("."))
   .settings(
     inThisBuild(List(
       organization := "io.monix",
       scalaVersion := "2.13.4",
-      version      := Version.version
+      version := Version.version
     )),
+    publishArtifact := false,
     name := "monix-mini-platform"
-  )
+  ).enablePlugins(DockerPlugin, JavaAppPackaging)
 
 lazy val master = (project in file("master"))
   .settings(
-    name := "monix-master",
+    name := "master",
     libraryDependencies ++= MasterDependencies,
-    version := Version.version
+    version := Version.masterVersion,
+    maintainer in Docker := "Pau Alarcón",
+    dockerUsername in Docker := Some("paualarco"),
+    dockerBaseImage in Docker := "golang:1.10-alpine3.7"
   )
-  .enablePlugins(JavaAppPackaging, DockerPlugin)
   .aggregate(common)
   .dependsOn(common)
+  .enablePlugins(DockerPlugin, JavaAppPackaging)
 
 lazy val slave = (project in file("slave"))
   .settings(
-    name := "monix-slave",
+    name := "slave",
     libraryDependencies ++= SlaveDependencies,
-    version := Version.version
-  ).enablePlugins(JavaAppPackaging, DockerPlugin)
+    version := Version.slaveVersion,
+    maintainer in Docker := "Pau Alarcón",
+    dockerUsername in Docker := Some("paualarco"),
+  )
   .aggregate(common)
   .dependsOn(common)
+  .enablePlugins(DockerPlugin, JavaAppPackaging)
 
 lazy val feeder = (project in file("feeder"))
   .settings(
-    name := "monix-feeder",
+    name := "feeder",
     libraryDependencies ++= FeederDependencies,
-    version := Version.version
-  ).enablePlugins(JavaAppPackaging, DockerPlugin)
+    version := Version.version,
+    maintainer in Docker := "Pau Alarcón",
+    dockerUsername in Docker := Some("paualarco"),
+  )
 
 lazy val common = (project in file("common"))
   .settings(
-    name := "monix-common",
+    name := "common",
     PB.targets in Compile := Seq(
       scalapb.gen() -> (sourceManaged in Compile).value / "scalapb"
     ),

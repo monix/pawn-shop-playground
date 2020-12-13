@@ -15,7 +15,7 @@ import pureconfig.generic.auto._
 
 import scala.concurrent.duration.FiniteDuration
 
-case class MasterConfig(httpServer: HttpServerConfiguration, grpcServer: GrpcServerConfiguration) {
+case class MasterConfig(httpServer: HttpServerConfiguration, grpcTimeout: FiniteDuration, grpcServer: GrpcServerConfiguration) {
   def toJson: String = this.asJson.noSpaces
 }
 

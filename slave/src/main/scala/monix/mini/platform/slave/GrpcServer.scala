@@ -1,16 +1,16 @@
-package monix.mini.platform.feeder
+package monix.mini.platform.slave
 
 import com.typesafe.scalalogging.LazyLogging
-import io.grpc.{Server, ServerBuilder}
-import monix.connect.mongodb.{MongoOp, MongoSource}
+import io.grpc.{ Server, ServerBuilder }
+import monix.connect.mongodb.{ MongoOp, MongoSource }
 import monix.connect.redis.RedisSet
 import monix.eval.Task
 import monix.execution.Scheduler
 import monix.mini.platform.protocol.SlaveProtocolGrpc.SlaveProtocol
-import monix.mini.platform.feeder.PersistanceRepository.{connection, operationsCol, transactionsCol, interactionsKey, branchesKey}
+import monix.mini.platform.slave.PersistanceRepository.{ branchesKey, connection, interactionsKey, operationsCol, transactionsCol }
 import monix.mini.platform.protocol._
-import monix.mini.platform.feeder.config.SlaveConfig
 import com.mongodb.client.model.Filters
+import monix.mini.platform.slave.config.SlaveConfig
 
 import scala.concurrent.Future
 
@@ -49,7 +49,7 @@ class GrpcServer(implicit config: SlaveConfig, scheduler: Scheduler) extends Laz
       (for {
         isFraudster <- RedisSet.sismember(config.redis.fraudstersKey, operationEvent.client)
         status <- {
-          if(isFraudster) Task.now(ResultStatus.FRAUDULENT)
+          if (isFraudster) Task.now(ResultStatus.FRAUDULENT)
           else MongoOp.insertOne(operationsCol, operationEvent.toEntity).as(ResultStatus.INSERTED)
         }
         _ <- RedisSet.sadd(branchesKey(operationEvent.client), operationEvent.branch)
@@ -62,7 +62,7 @@ class GrpcServer(implicit config: SlaveConfig, scheduler: Scheduler) extends Laz
       (for {
         isFraudster <- RedisSet.sismember(config.redis.fraudstersKey, transactionEvent.receiver)
         status <- {
-          if(isFraudster) Task.now(ResultStatus.FRAUDULENT)
+          if (isFraudster) Task.now(ResultStatus.FRAUDULENT)
           else MongoOp.insertOne(transactionsCol, transactionEvent.toEntity).as(ResultStatus.INSERTED)
         }
         _ <- RedisSet.sadd(interactionsKey(transactionEvent.sender), transactionEvent.receiver)

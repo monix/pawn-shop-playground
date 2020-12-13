@@ -1,0 +1,32 @@
+
+sbt 'master/docker:publish'
+sbt 'slave/docker:publish'
+sbt 'feeder/docker:publish'
+
+kind create cluster --name monix
+kubectl create ns mini-platform
+helm install master ./k8s/
+
+https://kubernetes.io/docs/tasks/debug-application-cluster/get-shell-running-container/
+
+
+# run a pod with curl
+kubectl apply -f https://k8s.io/examples/application/shell-demo.yaml
+kubectl create deployment --image=nginx nginx-app
+# or forward the local one to the master service
+kubectl port-forward --namespace mini-platform svc/master-svc 8080:80 &
+
+
+# more information to add mongodb to the local cluster
+https://github.com/bitnami/charts/tree/master/bitnami/mongodb
+
+helm install mongo \
+  --set usePassword=false,mongodbDatabase=mini_platform \
+  bitnami/mongodb
+
+helm install redis \
+  --set usePassword=false \
+  bitnami/redis
+
+ kubectl port-forward --namespace mini-platform svc/mongo-mongodb 27017:27017 &
+ kubectl port-forward --namespace mini-platform svc/redis-master 6379:6379 &

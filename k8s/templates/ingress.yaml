@@ -1,0 +1,16 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: master-ingress
+spec:
+  rules:
+    - host: grpc.example.com
+      http:
+        paths:
+          - path: /master
+            pathType: Prefix
+            backend:
+              service:
+                name: master-svc
+                port:
+                  number: 80

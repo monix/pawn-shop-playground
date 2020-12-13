@@ -1,20 +1,26 @@
 package monix.mini.platform.master
 
 import com.typesafe.scalalogging.LazyLogging
-import io.grpc.{Server, ServerBuilder}
+import io.grpc.protobuf.services.ProtoReflectionService
+import io.grpc.{ Server, ServerBuilder }
 import monix.eval.Task
-import monix.execution.{CancelableFuture, Scheduler}
+import monix.execution.{ CancelableFuture, Scheduler }
 import monix.mini.platform.config.MasterConfig
+import monix.mini.platform.master.MasterApp.{ config, logger }
 import monix.mini.platform.protocol.MasterProtocolGrpc.MasterProtocol
-import monix.mini.platform.protocol.{JoinReply, JoinRequest, JoinResponse}
+import monix.mini.platform.protocol.{ JoinReply, JoinRequest, JoinResponse }
 
 class GrpcServer(dispatcher: Dispatcher)(implicit config: MasterConfig, scheduler: Scheduler) extends LazyLogging { self =>
 
   private[this] var server: Server = null
 
+  logger.info(s"Starting grpc server on endpoint: ${config.grpcServer.endPoint}")
+
   private def start(): Unit = {
     server = ServerBuilder.forPort(config.grpcServer.port)
-      .addService(MasterProtocol.bindService(new MasterImpl, scheduler)).build.start
+      .addService(MasterProtocol.bindService(new MasterImpl, scheduler))
+      .addService(ProtoReflectionService.newInstance())
+      .build.start
     sys.addShutdownHook {
       System.err.println("*** shutting down gRPC server since JVM is shutting down")
       self.stop()

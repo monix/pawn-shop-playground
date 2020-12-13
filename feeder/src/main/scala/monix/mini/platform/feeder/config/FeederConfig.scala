@@ -18,13 +18,15 @@ object FeederConfig {
   implicit val confHint: ProductHint[FeederConfig] = ProductHint[FeederConfig](ConfigFieldMapping(CamelCase, CamelCase))
   implicit val redisConfHint: ProductHint[RedisConfig] = ProductHint[RedisConfig](ConfigFieldMapping(CamelCase, CamelCase))
 
-  case class RedisConfig(host: String,
-                         port: Int,
-                         url: String,
-                         fraudstersKey: String)
+  case class RedisConfig(
+    host: String,
+    port: Int,
+    url: String,
+    fraudstersKey: String)
 
-  case class S3Config(bucket: String,
-                      key: String)
+  case class S3Config(
+    bucket: String,
+    key: String)
 
   def load(): IO[ConfigReaderFailures, FeederConfig] = IO.fromEither(ConfigSource.default.load[FeederConfig])
 

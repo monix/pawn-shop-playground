@@ -30,3 +30,10 @@ services:
     image: redis
     ports:
       - 6379:6379
+
+  master:
+    container_name: master
+    image: paualarco/master:0.1.17
+    ports:
+      - 8080:8080
+      - 9081:9081

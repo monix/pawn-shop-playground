@@ -1,14 +1,14 @@
-package monix.mini.platform.master.algebra
+package monix.mini.platform.master.typeclass
 
 import monix.mini.platform.master.SlaveRef
-import monix.mini.platform.protocol.{FetchAllReply, FetchAllReplyView, FetchBranchesReply, FetchBranchesReplyView, FetchInteractionsReply, FetchInteractionsReplyView, FetchOperationsReply, FetchOperationsReplyView, FetchRequest, FetchTransactionsReply, FetchTransactionsReplyView}
+import monix.mini.platform.protocol.{ FetchAllReply, FetchAllReplyView, FetchBranchesReply, FetchBranchesReplyView, FetchInteractionsReply, FetchInteractionsReplyView, FetchOperationsReply, FetchOperationsReplyView, FetchRequest, FetchTransactionsReply, FetchTransactionsReplyView }
 
 import scala.concurrent.Future
 
 trait Fetch[Proto, View] {
-    val send: (SlaveRef, FetchRequest) => Future[Proto]
-    def toView(fetchReply: Proto): View
-    val defaultInstance: Proto
+  val send: (SlaveRef, FetchRequest) => Future[Proto]
+  def toView(fetchReply: Proto): View
+  val defaultInstance: Proto
 }
 
 object Fetch {

@@ -5,13 +5,13 @@ import io.grpc.ManagedChannelBuilder
 import monix.catnap.MVar
 import monix.eval.Task
 import monix.mini.platform.config.MasterConfig
-import monix.mini.platform.master.algebra.Fetch
-import monix.mini.platform.protocol.{EventResult, FetchRequest, JoinResponse, OperationEvent, ResultStatus, SlaveInfo, SlaveProtocolGrpc, TransactionEvent}
+import monix.mini.platform.master.typeclass.Fetch
+import monix.mini.platform.protocol.{ EventResult, FetchRequest, JoinResponse, OperationEvent, ResultStatus, SlaveInfo, SlaveProtocolGrpc, TransactionEvent }
 
 import scala.util.Random.shuffle
 import scala.concurrent.Future
 
-class Dispatcher(implicit config: MasterConfig) extends LazyLogging{
+class Dispatcher(implicit config: MasterConfig) extends LazyLogging {
 
   private val slaves: Task[MVar[Task, Seq[SlaveRef]]] = MVar[Task].of[Seq[SlaveRef]](Seq.empty).memoize
 
@@ -80,5 +80,4 @@ class Dispatcher(implicit config: MasterConfig) extends LazyLogging{
   }
 
 }
-
 

@@ -25,6 +25,7 @@ object Dependencies {
 
   val MasterDependencies: Seq[ModuleID] =Seq(
     "io.grpc" % "grpc-netty-shaded" % scalapb.compiler.Version.grpcJavaVersion,
+    "io.grpc" % "grpc-services" % scalapb.compiler.Version.grpcJavaVersion,
     "io.grpc"                   % "grpc-netty"             % scalapb.compiler.Version.grpcJavaVersion,
     "com.thesamet.scalapb"      %% "scalapb-runtime-grpc"  % scalapb.compiler.Version.scalapbVersion,
     "com.thesamet.scalapb"      %% "scalapb-runtime"       % scalapb.compiler.Version.scalapbVersion % "protobuf",
@@ -68,7 +69,7 @@ object Dependencies {
     "io.monix" %% "monix-bio" % "1.1.0",
     "io.circe"                  %% "circe-core"            % DependencyVersions.Circe,
     "io.circe"                  %% "circe-generic"         % DependencyVersions.Circe,
-    "io.circe"                  %% "circe-parser"          % DependencyVersions.Circe,
+    "io.circe"                  %% "circe-parser"          % DependencyVersions.Circe
   )
 
   val CommonDependencies: Seq[ModuleID] =Seq(

@@ -1,0 +1,31 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: master-svc
+spec:
+  selector:
+    app: master
+  ports:
+    - name: http
+      port: 80
+      targetPort: 8080
+      protocol: TCP
+    - name: grpc
+      port: 9081
+      targetPort: 9081
+      protocol: TCP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: slave-svc
+  labels:
+    app: slave
+spec:
+  type: ClusterIP
+  ports:
+    - name: grpc
+      port: 9082
+      targetPort: 9082
+  selector:
+    app: slave

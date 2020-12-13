@@ -1,0 +1,44 @@
+# Default values for k8s.
+
+podAnnotations: {}
+
+master:
+  appConfig:
+    httpServerHost: "0.0.0.0"
+    httpServerPort: 8080
+    grpcTimeout: 3seconds
+  image:
+    repository: docker.io/paualarco/master
+    pullPolicy: IfNotPresent
+    tag: "0.1.17"
+  replicas: 1
+  resources:
+    limits:
+      cpu: 400m
+      memory: 128Mi
+    requests:
+      cpu: 100m
+      memory: 128Mi
+
+slave:
+  appConfig:
+    masterServerHost: master-svc
+    masterServerPort: 9081
+    grpcTimeout: 15seconds
+    joinRequestRetries: 10
+    redisHost: redis-master
+    mongoHost: mongo-mongodb
+  image:
+    repository: docker.io/paualarco/slave
+    pullPolicy: IfNotPresent
+    tag: "0.1.4"
+  replicas: 1
+  resources:
+    limits:
+      cpu: 100m
+      memory: 128Mi
+    requests:
+      cpu: 100m
+      memory: 128Mi
+
+
