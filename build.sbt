@@ -1,12 +1,10 @@
-import Dependencies._
 import com.typesafe.sbt.SbtNativePackager.autoImport.maintainer
-import com.typesafe.sbt.packager.docker.DockerVersion
 
 lazy val root = (project in file("."))
   .settings(
     inThisBuild(List(
       organization := "io.monix",
-      scalaVersion := "2.13.4",
+      scalaVersion := "2.12.13",
       version := Version.version
     )),
     publishArtifact := false,
@@ -16,7 +14,7 @@ lazy val root = (project in file("."))
 lazy val dispatcher = (project in file("dispatcher"))
   .settings(
     name := "dispatcher",
-    libraryDependencies ++= DispatcherDependencies,
+    libraryDependencies ++= Dependencies.DispatcherDependencies,
     version := Version.dispatcherVersion,
     maintainer in Docker := "Pau Alarcón",
     dockerUsername in Docker := Some("paualarco"),
@@ -29,7 +27,7 @@ lazy val dispatcher = (project in file("dispatcher"))
 lazy val worker = (project in file("worker"))
   .settings(
     name := "worker",
-    libraryDependencies ++= WorkerDependencies,
+    libraryDependencies ++= Dependencies.DispatcherDependencies,
     version := Version.workerVersion,
     maintainer in Docker := "Pau Alarcón",
     dockerUsername in Docker := Some("paualarco"),
@@ -41,7 +39,7 @@ lazy val worker = (project in file("worker"))
 lazy val feeder = (project in file("feeder"))
   .settings(
     name := "feeder",
-    libraryDependencies ++= FeederDependencies,
+    libraryDependencies ++= Dependencies.DispatcherDependencies,
     version := Version.version,
     maintainer in Docker := "Pau Alarcón",
     dockerUsername in Docker := Some("paualarco"),
@@ -53,6 +51,6 @@ lazy val common = (project in file("common"))
     PB.targets in Compile := Seq(
       scalapb.gen() -> (sourceManaged in Compile).value / "scalapb"
     ),
-    libraryDependencies ++= CommonDependencies,
+    libraryDependencies ++= Dependencies.DispatcherDependencies,
     version := Version.version
   )

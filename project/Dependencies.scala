@@ -4,6 +4,7 @@ object Dependencies {
 
   object DependencyVersions {
     val PureConfig = "0.14.0"
+    val MonixKafka = "1.0.0-RC6-1526702"
     val Monix = "3.3.0"
     val MonixConnect = "0.5.2"
     val Circe = "0.12.3"
@@ -56,7 +57,7 @@ object Dependencies {
     "com.typesafe.scala-logging" %% "scala-logging" % DependencyVersions.ScalaLogging,
     "ch.qos.logback" % "logback-classic" % "1.2.3",
     "com.github.pureconfig"     %% "pureconfig"            % DependencyVersions.PureConfig,
-    "io.monix" %% "monix-bio" % "1.1.0"
+    "io.monix" %% "monix-kafka-1x" % DependencyVersions.MonixKafka
   )
 
   val FeederDependencies: Seq[ModuleID] = Seq(

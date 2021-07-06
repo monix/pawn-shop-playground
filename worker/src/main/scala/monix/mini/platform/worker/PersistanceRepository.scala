@@ -1,11 +1,11 @@
 package monix.mini.platform.worker
 
-import com.mongodb.reactivestreams.client.{MongoClient, MongoClients, MongoDatabase}
+import com.mongodb.reactivestreams.client.{ MongoClient, MongoClients, MongoDatabase }
 import io.lettuce.core.RedisClient
 import io.lettuce.core.api.StatefulRedisConnection
-import monix.mini.platform.protocol.{OperationEvent, OperationEventEntity, TransactionEventEntity}
+import monix.mini.platform.protocol.{ OperationEvent, OperationEventEntity, TransactionEventEntity }
 import monix.mini.platform.worker.config.WorkerConfig
-import org.bson.codecs.configuration.CodecRegistries.{fromProviders, fromRegistries}
+import org.bson.codecs.configuration.CodecRegistries.{ fromProviders, fromRegistries }
 import org.mongodb.scala.MongoClient.DEFAULT_CODEC_REGISTRY
 import org.mongodb.scala.bson.codecs.Macros._
 
