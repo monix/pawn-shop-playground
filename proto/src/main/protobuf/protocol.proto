@@ -1,0 +1,124 @@
+syntax = "proto3";
+
+package monix.mini.platform;
+
+//Master slave service definition
+service DispatcherProtocol {
+  rpc join (JoinRequest) returns (JoinReply) {}
+}
+
+service WorkerProtocol {
+  rpc fetchItemById (FetchByIdRequest) returns (FetchItemResponse) {}
+  rpc fetchItemsByName (FetchByNameRequest) returns (FetchItemsResponse)  {}
+  rpc fetchItemsByCategory(FetchByCategoryRequest) returns (FetchItemsResponse)  {}
+  rpc fetchItemsByState(FetchByStateRequest) returns (FetchItemsResponse)  {}
+}
+
+message FetchByIdRequest {
+  string id = 1;
+}
+
+message FetchByNameRequest {
+  string name = 1;
+  int32 limit = 2;
+}
+
+message FetchByStateRequest {
+  State state = 1;
+}
+
+message FetchByCategoryRequest {
+  Category category = 1;
+}
+
+message Throw {
+  string itemId = 1;
+  string date = 2;
+}
+
+message Pawn {
+  string clientId = 1;
+  string itemId = 3;
+  int64 price = 4;
+  int32 tax = 5;
+  string date = 6;
+  int32 limitDays = 7;
+}
+
+message Sell {
+  string clientId = 1;
+  string itemId = 2;
+  int64 price = 3;
+  string date = 4;
+  string profit = 5;
+}
+
+message Buy {
+  string clientId = 1;
+  string itemId = 2;
+  int64 price = 3;
+  string date = 4;
+}
+
+message Client {
+  string id = 1;
+  string name = 2;
+  int32 age = 3;
+  string clientFromDate = 6;
+}
+
+enum Category {
+  Reading = 0;
+  Collection = 1;
+  Decoration = 2;
+  Clothing = 3;
+  Jewelry = 4;
+  Motor = 5;
+  Electronics = 6;
+}
+
+enum State {
+  New = 0;
+  Good = 1;
+  Bad = 2;
+  Fatal = 3;
+}
+
+message Item {
+  string id = 1;
+  string name = 2;
+  Category category = 3;
+  int64 price = 4;
+  State state = 5;
+  int32 ageInMonths = 6;
+}
+
+message FetchItemResponse {
+  Item item = 1;
+}
+
+message FetchItemsResponse {
+  repeated Item items = 1;
+}
+
+message Ack {}
+
+//join
+message JoinRequest {
+ WorkerInfo workerInfo = 1;
+}
+
+message WorkerInfo {
+  string workerId = 1;
+  string host = 2;
+  int32 port = 3;
+}
+
+message JoinReply {
+  JoinResponse response = 1;
+}
+
+enum JoinResponse {
+  JOINED = 0;
+  REJECTED = 1;
+}

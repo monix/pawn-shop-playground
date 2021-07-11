@@ -2,21 +2,21 @@ package monix.mini.platform.config
 
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter.ISO_DATE
-
 import DispatcherConfig.{ GrpcServerConfiguration, HttpServerConfiguration }
 import io.circe._
 import io.circe.generic.auto._
 import io.circe.generic.semiauto._
 import io.circe.syntax._
+import monix.kafka.KafkaProducerConfig
 import pureconfig._
 import pureconfig.configurable.localDateConfigConvert
 import pureconfig.generic.ProductHint
 import pureconfig.generic.auto._
-
 import scala.concurrent.duration.FiniteDuration
 
-case class DispatcherConfig(httpServer: HttpServerConfiguration, grpcTimeout: FiniteDuration, grpcServer: GrpcServerConfiguration) {
+case class DispatcherConfig(httpServer: HttpServerConfiguration, grpcTimeout: FiniteDuration, grpcServer: GrpcServerConfiguration, kafkaConfig: KafkaConfiguration) {
   def toJson: String = this.asJson.noSpaces
+
 }
 
 object DispatcherConfig {
@@ -41,5 +41,14 @@ object DispatcherConfig {
     port: Int,
     endPoint: String)
 
+  case class KafkaConfiguration(brokerUrls: List[String],
+                                buyEventsTopic: String,
+                                sellEventsTopic: String,
+                                pawnEventsTopic: String) {
+
+    val producerConfig = KafkaProducerConfig.default.copy(
+      bootstrapServers = brokerUrls
+    )
+  }
 }
 

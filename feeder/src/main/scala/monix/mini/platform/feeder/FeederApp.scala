@@ -1,6 +1,6 @@
 package monix.mini.platform.feeder
 
-import cats.effect.{ExitCode, IOApp, IO => CatsIO}
+import cats.effect.{ ExitCode, IOApp, IO => CatsIO }
 import com.typesafe.scalalogging.LazyLogging
 import io.lettuce.core.RedisClient
 import io.lettuce.core.api.StatefulRedisConnection
@@ -9,7 +9,7 @@ import monix.eval.Task
 
 import scala.concurrent.duration._
 import monix.connect.s3.S3
-import monix.bio.{IO, UIO}
+import monix.bio.{ IO, UIO }
 import pureconfig.error.ConfigReaderFailures
 import monix.execution.Scheduler.Implicits.global
 import monix.mini.platform.feeder.config.FeederConfig

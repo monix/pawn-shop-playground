@@ -6,9 +6,9 @@ import io.grpc.{ Server, ServerBuilder }
 import monix.eval.Task
 import monix.execution.{ CancelableFuture, Scheduler }
 import monix.mini.platform.config.DispatcherConfig
-import monix.mini.platform.master.DispatcherApp.{ config, logger }
-import monix.mini.platform.protocol.MasterProtocolGrpc.MasterProtocol
+import monix.mini.platform.protocol.DispatcherProtocolGrpc.DispatcherProtocol
 import monix.mini.platform.protocol.{ JoinReply, JoinRequest, JoinResponse }
+import monix.mini.platform.protocol.JoinResponse
 
 class GrpcServer(dispatcher: Dispatcher)(implicit config: DispatcherConfig, scheduler: Scheduler) extends LazyLogging { self =>
 
@@ -18,7 +18,7 @@ class GrpcServer(dispatcher: Dispatcher)(implicit config: DispatcherConfig, sche
 
   private def start(): Unit = {
     server = ServerBuilder.forPort(config.grpcServer.port)
-      .addService(MasterProtocol.bindService(new MasterImpl, scheduler))
+      .addService(DispatcherProtocol.bindService(new DispatcherImpl, scheduler))
       .addService(ProtoReflectionService.newInstance())
       .build.start
     sys.addShutdownHook {
@@ -41,11 +41,11 @@ class GrpcServer(dispatcher: Dispatcher)(implicit config: DispatcherConfig, sche
     }
   }
 
-  private class MasterImpl extends MasterProtocol {
+  private class DispatcherImpl extends DispatcherProtocol {
     override def join(req: JoinRequest): CancelableFuture[JoinReply] = {
-      logger.info(s"Join Request received with slave info: ${req.slaveInfo}")
-      val joinResponse = req.slaveInfo match {
-        case Some(slaveInfo) => dispatcher.addNewSlave(slaveInfo)
+      logger.info(s"Join Request received with slave info: ${req.workerInfo}")
+      val joinResponse = req.workerInfo match {
+        case Some(workerInfo) => dispatcher.addNewSlave(workerInfo)
         case None => Task.now(JoinResponse.REJECTED)
       }
       joinResponse.map(JoinReply.of).runToFuture

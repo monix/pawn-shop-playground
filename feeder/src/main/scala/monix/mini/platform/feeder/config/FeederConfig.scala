@@ -1,11 +1,11 @@
 package monix.mini.platform.feeder.config
 
-import io.circe.{Encoder, Json}
+import io.circe.{ Encoder, Json }
 import monix.bio.IO
-import monix.mini.platform.feeder.config.FeederConfig.{RedisConfig, S3Config}
+import monix.mini.platform.feeder.config.FeederConfig.{ RedisConfig, S3Config }
 import pureconfig.error.ConfigReaderFailures
 import pureconfig.generic.ProductHint
-import pureconfig.{CamelCase, ConfigFieldMapping, ConfigSource}
+import pureconfig.{ CamelCase, ConfigFieldMapping, ConfigSource }
 import pureconfig.generic.auto._
 
 import scala.concurrent.duration.FiniteDuration

@@ -5,8 +5,8 @@ import monix.mini.platform.protocol.{ FetchAllReply, FetchAllReplyView, FetchBra
 
 import scala.concurrent.Future
 
-trait Fetch[Proto, View] {
-  val send: (WorkerRef, FetchRequest) => Future[Proto]
+trait Fetch[Req, Proto, View] {
+  val send: (WorkerRef, Req) => Future[Proto]
   def toView(fetchReply: Proto): View
   val defaultInstance: Proto
 }

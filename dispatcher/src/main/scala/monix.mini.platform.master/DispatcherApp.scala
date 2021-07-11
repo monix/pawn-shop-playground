@@ -7,12 +7,12 @@ import monix.execution.ExecutionModel
 import org.http4s.implicits._
 import org.http4s.server.blaze._
 import monix.mini.platform.config.DispatcherConfig
-import monix.mini.platform.master.http.UserRoutes
+import monix.mini.platform.master.http.CoreRoutes
 import monix.execution.Scheduler.Implicits.global
 
 import scala.concurrent.duration._
 
-object DispatcherApp extends TaskApp with UserRoutes with LazyLogging {
+object DispatcherApp extends TaskApp with CoreRoutes with LazyLogging {
 
   implicit val config: DispatcherConfig = DispatcherConfig.load()
 

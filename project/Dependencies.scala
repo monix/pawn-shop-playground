@@ -6,7 +6,7 @@ object Dependencies {
     val PureConfig = "0.14.0"
     val MonixKafka = "1.0.0-RC6-1526702"
     val Monix = "3.3.0"
-    val MonixConnect = "0.5.2"
+    val MonixConnect = "0.6.0"
     val Circe = "0.12.3"
     val Http4s = "0.21.13"
 
@@ -43,7 +43,9 @@ object Dependencies {
     "ch.qos.logback" % "logback-classic" % "1.2.3",
     "com.github.pureconfig"     %% "pureconfig"            % DependencyVersions.PureConfig,
     "io.github.scalapb-json" %% "scalapb-circe" % "0.7.2",
-    "io.monix" %% "monix-bio" % "1.1.0"
+    "io.monix" %% "monix-bio" % "1.1.0",
+    "io.monix" %% "monix-kafka-1x" % DependencyVersions.MonixKafka
+
   )
 
   val WorkerDependencies: Seq[ModuleID] =Seq(
@@ -73,7 +75,7 @@ object Dependencies {
     "io.circe"                  %% "circe-parser"          % DependencyVersions.Circe
   )
 
-  val CommonDependencies: Seq[ModuleID] =Seq(
+  val ProtobufDependencies: Seq[ModuleID] =Seq(
     "io.grpc"                   % "grpc-netty"             % scalapb.compiler.Version.grpcJavaVersion,
     "com.thesamet.scalapb"      %% "scalapb-runtime-grpc"  % scalapb.compiler.Version.scalapbVersion,
     "com.thesamet.scalapb"      %% "scalapb-runtime"       % scalapb.compiler.Version.scalapbVersion % "protobuf"
