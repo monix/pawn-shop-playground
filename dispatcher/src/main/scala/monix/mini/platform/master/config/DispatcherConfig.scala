@@ -2,7 +2,7 @@ package monix.mini.platform.config
 
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter.ISO_DATE
-import DispatcherConfig.{ GrpcServerConfiguration, HttpServerConfiguration }
+import DispatcherConfig.{ GrpcServerConfiguration, HttpServerConfiguration, KafkaConfiguration }
 import io.circe._
 import io.circe.generic.auto._
 import io.circe.generic.semiauto._
@@ -16,7 +16,6 @@ import scala.concurrent.duration.FiniteDuration
 
 case class DispatcherConfig(httpServer: HttpServerConfiguration, grpcTimeout: FiniteDuration, grpcServer: GrpcServerConfiguration, kafkaConfig: KafkaConfiguration) {
   def toJson: String = this.asJson.noSpaces
-
 }
 
 object DispatcherConfig {
@@ -42,13 +41,26 @@ object DispatcherConfig {
     endPoint: String)
 
   case class KafkaConfiguration(brokerUrls: List[String],
+                                itemsTopic: String,
                                 buyEventsTopic: String,
                                 sellEventsTopic: String,
                                 pawnEventsTopic: String) {
 
-    val producerConfig = KafkaProducerConfig.default.copy(
+
+    val producerConfig: KafkaProducerConfig = KafkaProducerConfig.default.copy(
       bootstrapServers = brokerUrls
     )
+
+    val itemsTopicConfig: KafkaTopicConfig = KafkaTopicConfig(itemsTopic, producerConfig)
+    val buyEventsTopicConfig: KafkaTopicConfig  = KafkaTopicConfig(buyEventsTopic, producerConfig)
+    val sellTopicConfig: KafkaTopicConfig  = KafkaTopicConfig(sellEventsTopic, producerConfig)
+    val pawnTopicConfig: KafkaTopicConfig  = KafkaTopicConfig(pawnEventsTopic, producerConfig)
+
   }
+
+  case class KafkaTopicConfig(topicName: String, producerConfig: KafkaProducerConfig)
+
+
+
 }
 

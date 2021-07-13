@@ -1,4 +1,4 @@
-package monix.mini.platform.master
+package monix.mini.platform.master.grpc
 
 import com.typesafe.scalalogging.LazyLogging
 import io.grpc.protobuf.services.ProtoReflectionService
@@ -6,11 +6,11 @@ import io.grpc.{ Server, ServerBuilder }
 import monix.eval.Task
 import monix.execution.{ CancelableFuture, Scheduler }
 import monix.mini.platform.config.DispatcherConfig
+import monix.mini.platform.master.Dispatcher
 import monix.mini.platform.protocol.DispatcherProtocolGrpc.DispatcherProtocol
 import monix.mini.platform.protocol.{ JoinReply, JoinRequest, JoinResponse }
-import monix.mini.platform.protocol.JoinResponse
 
-class GrpcServer(dispatcher: Dispatcher)(implicit config: DispatcherConfig, scheduler: Scheduler) extends LazyLogging { self =>
+class GrpcServer(dispatcher: Dispatcher, config: DispatcherConfig, scheduler: Scheduler) extends LazyLogging { self =>
 
   private[this] var server: Server = null
 
@@ -28,9 +28,9 @@ class GrpcServer(dispatcher: Dispatcher)(implicit config: DispatcherConfig, sche
     }
   }
 
-  private def stop(): Unit = {
+  def stop(): Task[Unit] = {
     if (server != null) {
-      server.shutdown()
+      Task.evalAsync(server.shutdown())
     }
   }
 
@@ -51,4 +51,9 @@ class GrpcServer(dispatcher: Dispatcher)(implicit config: DispatcherConfig, sche
       joinResponse.map(JoinReply.of).runToFuture
     }
   }
+}
+
+object GrpcServer {
+  def apply(dispatcher: Dispatcher, config: DispatcherConfig, scheduler: Scheduler): GrpcServer =
+    new GrpcServer(dispatcher, config, scheduler)
 }

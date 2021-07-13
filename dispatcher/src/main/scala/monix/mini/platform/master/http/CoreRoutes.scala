@@ -8,43 +8,22 @@ import io.circe.Json
 import io.circe.generic.auto._
 import org.http4s.{ HttpRoutes, QueryParamDecoder, Response }
 import monix.eval.Task
-import monix.mini.platform.master.typeclass.Fetch.{ allFetch, branchesFetch, interactionsFetch, operationsFetch, transactionsFetch }
-import monix.mini.platform.master.{ Dispatcher, KafkaPublisher }
-import monix.mini.platform.protocol.{ Buy, Category, FetchByCategoryRequest, FetchByIdRequest, FetchByStateRequest, Item, Pawn, Sell, State }
-import org.apache.kafka.clients.producer.RecordMetadata
-import org.http4s.Status.Ok
+import monix.mini.platform.master.Dispatcher
+import monix.mini.platform.protocol.{ Category, FetchByCategoryRequest, FetchByIdRequest, FetchByStateRequest, Item, Pawn, Sell, State }
 import org.http4s.dsl.Http4sDsl
-import org.http4s.dsl.io.InternalServerError
 import io.circe.syntax._
+import CoreRoutes._
+import monix.mini.platform.master.kafka.KafkaPublisher
+import scala.language.implicitConversions
 
 trait CoreRoutes extends Http4sDsl[Task] with LazyLogging {
 
-
-  case class ItemEntity(id: String,
-                        name: String,
-                        category: Category,
-                        price: Long = 0,
-                        state: State,
-                        ageInMonths: Int) {
-    def toProto: Item = Item(id = id, name = name, category = category, price = price, ageInMonths = ageInMonths)
-  }
-  case object ItemEntity {
-    def fromProto(item: Item):ItemEntity = ItemEntity(
-      id = item.id,
-      name = item.name,
-      category = item.category,
-      price = item.price,
-      state = item.state,
-      ageInMonths = item.ageInMonths)
-  }
+  val dispatcher: Dispatcher
+  implicit val itemPublisher: KafkaPublisher[Item]
 
   implicit val itemEncoder = jsonOf[Task, ItemEntity]
 
-  implicit val itemPublisher: KafkaPublisher[Item]
-
-  val dispatcher: Dispatcher
   object ItemIdQueryParamMatcher extends QueryParamDecoderMatcher[String]("id")
-
 
   implicit val categoryQueryParamDecoder: QueryParamDecoder[Category] = QueryParamDecoder[String].map(Category.fromName)
   object CategoryQueryParamMatcher extends QueryParamDecoderMatcher[Category]("category")
@@ -59,7 +38,12 @@ trait CoreRoutes extends Http4sDsl[Task] with LazyLogging {
     case req@ POST -> Root / "item" / "add" => {
       val buyEvent: Task[Item] = req.as[ItemEntity].map(_.toProto)
       logger.info(s"Received Buy Item event.")
-      buyEvent.flatMap(dispatcher.publish(_, retries = 3).toHttpResponse)
+      buyEvent.flatMap(dispatcher.publish(_, retries = 3))
+              .redeem(ex => {
+                logger.error(s"Failed to add new Item.", ex)
+                Response(status = InternalServerError)
+              }, _ => Response(status = Ok)
+      )
     }
 
     case _@ GET -> Root / "item" / "fetch" :? ItemIdQueryParamMatcher(itemId) =>
@@ -77,11 +61,11 @@ trait CoreRoutes extends Http4sDsl[Task] with LazyLogging {
     case _@ GET -> Root / "item" / "fetch" :? CategoryQueryParamMatcher(category) =>
       logger.debug(s"Fetch request by $category category received.")
       for {
-        maybeItem <- dispatcher.fetchItem(FetchByCategoryRequest.of(category)).map(_.item.toList)
+        items <- dispatcher.fetchItem(FetchByCategoryRequest.of(category))
         httpResponse <- Task.eval {
-          maybeItem match {
+          items.item.toList match {
             case Nil => Response(NotFound, body = Task.now(s"No items found for category ${category}.".getBytes).toByteStream)
-            case items =>  Response(Ok, body = Task.eval(items.toByteArray).toByteStream)
+            case _ =>  Response(Ok, body = Task.eval(items.toByteArray).toByteStream)
           }
         }
 
@@ -94,17 +78,25 @@ trait CoreRoutes extends Http4sDsl[Task] with LazyLogging {
 
   }
 
-  implicit class ExtendedUnitTask[A](task: Task[Unit]) {
-    def toHttpResponse: Task[Response[Task]] = {
-      task.redeem(
-        ex => {
-          logger.error(s"Failed to process event, returning status code ${InternalServerError.code}.", ex)
-          Response(status = InternalServerError)
-        }
-        ,
-        _ => Response(status = Ok)
-      )
-    }
+}
+
+object CoreRoutes {
+  case class ItemEntity(id: String,
+                        name: String,
+                        category: Category,
+                        price: Long = 0,
+                        state: State,
+                        ageInMonths: Int) {
+    def toProto: Item = Item(id = id, name = name, category = category, price = price, ageInMonths = ageInMonths)
+  }
+  case object ItemEntity {
+    def fromProto(item: Item):ItemEntity = ItemEntity(
+      id = item.id,
+      name = item.name,
+      category = item.category,
+      price = item.price,
+      state = item.state,
+      ageInMonths = item.ageInMonths)
   }
 
   implicit class ExtendedArrayByteTask[A](task: Task[Array[Byte]]) {

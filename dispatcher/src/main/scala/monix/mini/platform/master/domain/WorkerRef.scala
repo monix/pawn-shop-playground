@@ -1,4 +1,4 @@
-package monix.mini.platform.master
+package monix.mini.platform.master.domain
 
 import monix.mini.platform.protocol.WorkerProtocolGrpc.WorkerProtocolStub
 

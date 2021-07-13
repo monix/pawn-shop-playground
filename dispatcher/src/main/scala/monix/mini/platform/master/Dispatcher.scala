@@ -5,9 +5,11 @@ import io.grpc.ManagedChannelBuilder
 import monix.catnap.MVar
 import monix.eval.Task
 import monix.mini.platform.config.DispatcherConfig
-import monix.mini.platform.protocol.{ FetchByCategoryRequest, FetchByIdRequest, FetchByNameRequest, FetchByStateRequest, FetchItemResponse, FetchItemsResponse, Item, JoinResponse, WorkerInfo, WorkerProtocolGrpc }
-import scala.util.Random.shuffle
+import monix.mini.platform.master.domain.WorkerRef
+import monix.mini.platform.master.kafka.KafkaPublisher
+import monix.mini.platform.protocol._
 import scala.concurrent.Future
+import scala.util.Random.shuffle
 import scalapb.GeneratedMessage
 
 class Dispatcher(config: DispatcherConfig) extends LazyLogging {
@@ -17,18 +19,11 @@ class Dispatcher(config: DispatcherConfig) extends LazyLogging {
   def createSlaveRef(workerInfo: WorkerInfo): WorkerRef = {
     val channel = ManagedChannelBuilder.forAddress(workerInfo.host, workerInfo.port).usePlaintext().build()
     val stub = WorkerProtocolGrpc.stub(channel)
-    WorkerRef(workerInfo.workerId, stub)
+    domain.WorkerRef(workerInfo.workerId, stub)
   }
 
-  def publish[T <: GeneratedMessage](event: T, retries: Int)(implicit publisher: KafkaPublisher[T]): Task[Unit] = {
-    publisher.publish(event).onErrorHandleWith { ex =>
-      if (retries > 0) publish(event, retries - 1)
-      else {
-        logger.error(s"Failed publishing event to topic ${publisher.topic}.", ex)
-        Task.raiseError(ex).void
-      }
-    }.void
-  }
+  def publish[T <: GeneratedMessage](event: T, retries: Int)(implicit publisher: KafkaPublisher[T]): Task[Unit] =
+    publisher.publish(event, retries).void
 
   def addNewSlave(workerInfo: WorkerInfo): Task[JoinResponse] = {
     val workerRef = createSlaveRef(workerInfo)
