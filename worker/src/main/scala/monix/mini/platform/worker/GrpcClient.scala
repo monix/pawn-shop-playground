@@ -2,23 +2,24 @@ package monix.mini.platform.worker
 
 import io.grpc.ManagedChannelBuilder
 import monix.eval.Task
-import WorkerApp.config
 import com.typesafe.scalalogging.LazyLogging
-import monix.mini.platform.protocol.{ JoinReply, JoinRequest, MasterProtocolGrpc, SlaveInfo }
+import monix.mini.platform.protocol.{ DispatcherProtocolGrpc, JoinReply, JoinRequest, WorkerInfo }
+import monix.mini.platform.worker.config.WorkerConfig
 import scala.concurrent.duration._
 
-object GrpcClient extends LazyLogging {
+class GrpcClient(config: WorkerConfig) extends LazyLogging {
 
-  def sendJoinRequest(retries: Int): Task[JoinReply] = {
+  val channel = ManagedChannelBuilder.forAddress(config.dispatcherServer.host, config.dispatcherServer.port).usePlaintext().build()
+  val masterStub = DispatcherProtocolGrpc.stub(channel)
+  val slaveInfo = WorkerInfo.of(config.slaveId, config.grpcServer.host, config.grpcServer.port)
+
+  def sendJoinRequest(retries: Int, backoffDelay: FiniteDuration = 5.seconds): Task[JoinReply] = {
     //grpc client
-    val channel = ManagedChannelBuilder.forAddress(config.dispatcherServer.host, config.dispatcherServer.port).usePlaintext().build()
-    val masterStub = MasterProtocolGrpc.stub(channel)
-    val slaveInfo = SlaveInfo.of(config.slaveId, config.grpcServer.host, config.grpcServer.port)
     Task.fromFuture(masterStub.join(JoinRequest.of(Some(slaveInfo))))
       .onErrorHandleWith { ex =>
         if (retries > 0) {
           logger.info(s"Remaining join retries ${retries}")
-          sendJoinRequest(retries - 1).delayExecution(5.seconds)
+          sendJoinRequest(retries - 1).delayExecution(backoffDelay)
         } else {
           logger.error(s"Reached maximum join request attemts with exception", ex)
           Task.raiseError(ex)
@@ -26,4 +27,8 @@ object GrpcClient extends LazyLogging {
       }
   }
 
+}
+
+object GrpcClient {
+  def apply(config: WorkerConfig) = new GrpcClient(config)
 }

@@ -28,6 +28,8 @@ trait CoreRoutes extends Http4sDsl[Task] with LazyLogging {
   implicit val categoryQueryParamDecoder: QueryParamDecoder[Category] = QueryParamDecoder[String].map(Category.fromName)
   object CategoryQueryParamMatcher extends QueryParamDecoderMatcher[Category]("category")
 
+  object LimitQueryParamMatcher extends QueryParamDecoderMatcher[Int]("limit")
+
   implicit val stateQueryParamDecoder: QueryParamDecoder[State] = QueryParamDecoder[String].map(State.fromName)
   object StateQueryParamMatcher extends QueryParamDecoderMatcher[State]("state")
 
@@ -58,24 +60,29 @@ trait CoreRoutes extends Http4sDsl[Task] with LazyLogging {
         }
       } yield httpResponse
 
-    case _@ GET -> Root / "item" / "fetch" :? CategoryQueryParamMatcher(category) =>
+    case _@ GET -> Root / "item" / "fetch" :? CategoryQueryParamMatcher(category) :? LimitQueryParamMatcher(limit)=>
       logger.debug(s"Fetch request by $category category received.")
       for {
-        items <- dispatcher.fetchItem(FetchByCategoryRequest.of(category))
+        items <- dispatcher.fetchItem(FetchByCategoryRequest.of(category, limit))
         httpResponse <- Task.eval {
-          items.item.toList match {
+          items.items.toList match {
             case Nil => Response(NotFound, body = Task.now(s"No items found for category ${category}.".getBytes).toByteStream)
             case _ =>  Response(Ok, body = Task.eval(items.toByteArray).toByteStream)
           }
         }
-
       } yield httpResponse
-      dispatcher.fetchItem(FetchByCategoryRequest.of(category)) >> Task.now(Response(Ok))
 
-    case _@ GET -> Root / "item" / "fetch" :? StateQueryParamMatcher(state) =>
+    case _@ GET -> Root / "item" / "fetch" :? StateQueryParamMatcher(state) :? LimitQueryParamMatcher(limit)  =>
       logger.debug(s"Fetch request by $state state received.")
-      dispatcher.fetchItem(FetchByStateRequest.of(state)) >> Task.now(Response(Ok))
-
+      for {
+        items <- dispatcher.fetchItem(FetchByStateRequest.of(state, limit))
+        httpResponse <- Task.eval {
+          items.items.toList match {
+            case Nil => Response(NotFound, body = Task.now(s"No items with state `${state} was found.".getBytes).toByteStream)
+            case _ =>  Response(Ok, body = Task.eval(items.toByteArray).toByteStream)
+          }
+        }
+      } yield httpResponse
   }
 
 }

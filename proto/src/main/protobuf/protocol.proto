@@ -25,10 +25,12 @@ message FetchByNameRequest {
 
 message FetchByStateRequest {
   State state = 1;
+  int32 limit = 2;
 }
 
 message FetchByCategoryRequest {
   Category category = 1;
+  int32 limit = 2;
 }
 
 message Throw {

@@ -8,11 +8,10 @@ import monix.mini.platform.master.kafka.KafkaPublisher
 import monix.mini.platform.protocol.{ Buy, Pawn, Sell }
 import org.http4s.circe.jsonOf
 import org.http4s.dsl.Http4sDsl
-import org.http4s.{ HttpRoutes, Response }
+import org.http4s.{ EntityDecoder, HttpRoutes, Response }
 import scala.language.implicitConversions
 
 trait ActionRoutes extends Http4sDsl[Task] with LazyLogging {
-
 
   case class BuyEntity(clientId: String, itemId: String, price: Long, date: String, profit: String) {
     def toProto: Buy = Buy(clientId = clientId, itemId = itemId, price = price, date = date)
@@ -26,9 +25,9 @@ trait ActionRoutes extends Http4sDsl[Task] with LazyLogging {
     def toProto: Pawn = Pawn(clientId = clientId, itemId = itemId, price = price, tax = tax)
   }
 
-  implicit val buyEncoder = jsonOf[Task, BuyEntity]
-  implicit val sellEncoder = jsonOf[Task, SellEntity]
-  implicit val pawnEncoder = jsonOf[Task, PawnEntity]
+  implicit val buyEncoder: EntityDecoder[Task, BuyEntity] = jsonOf[Task, BuyEntity]
+  implicit val sellEncoder: EntityDecoder[Task, SellEntity] = jsonOf[Task, SellEntity]
+  implicit val pawnEncoder: EntityDecoder[Task, PawnEntity] = jsonOf[Task, PawnEntity]
 
   implicit val buyPublisher: KafkaPublisher[Buy]
   implicit val sellPublisher: KafkaPublisher[Sell]
