@@ -7,7 +7,7 @@ import pureconfig.generic.auto._
 
 import scala.concurrent.duration.FiniteDuration
 
-case class WorkerConfig(slaveId: String, grpcTimeout: FiniteDuration, joinRequestRetries: Int, grpcServer: GrpcServerConfig, dispatcherServer: GrpcServerConfig, mongodb: MongoDbConfig, redis: RedisConfig)
+case class WorkerConfig(slaveId: String, grpcServer: GrpcServerConfig, dispatcherServer: GrpcServerConfig, mongodb: MongoDbConfig, redis: RedisConfig)
 
 object WorkerConfig {
 

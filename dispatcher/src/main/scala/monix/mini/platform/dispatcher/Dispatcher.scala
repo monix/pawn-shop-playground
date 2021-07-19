@@ -1,18 +1,20 @@
-package monix.mini.platform.master
+package monix.mini.platform.dispatcher
 
 import com.typesafe.scalalogging.LazyLogging
 import io.grpc.ManagedChannelBuilder
 import monix.catnap.MVar
 import monix.eval.Task
-import monix.mini.platform.config.DispatcherConfig
-import monix.mini.platform.master.domain.WorkerRef
-import monix.mini.platform.master.kafka.KafkaPublisher
+import monix.mini.platform.dispatcher.config.DispatcherConfig
+import monix.mini.platform.dispatcher.domain.WorkerRef
+import monix.mini.platform.dispatcher.kafka.KafkaPublisher
 import monix.mini.platform.protocol._
+
 import scala.concurrent.Future
 import scala.util.Random.shuffle
 import scalapb.GeneratedMessage
+import cats.effect.{Async, Concurrent, ContextShift}
 
-class Dispatcher(config: DispatcherConfig) extends LazyLogging {
+class Dispatcher(config: DispatcherConfig)(implicit contextShift: ContextShift[Task]) extends LazyLogging {
 
   private val workers: Task[MVar[Task, Seq[WorkerRef]]] = MVar[Task].of[Seq[WorkerRef]](Seq.empty).memoize
 

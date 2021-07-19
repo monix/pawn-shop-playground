@@ -4,11 +4,11 @@ object Dependencies {
 
   object DependencyVersions {
     val PureConfig = "0.14.0"
-    val MonixKafka = "1.0.0-RC6-1526702"
+    val MonixKafka = "1.0.0-RC7"
     val Monix = "3.3.0"
     val MonixConnect = "0.6.0"
     val Circe = "0.12.3"
-    val Http4s = "0.21.13"
+    val Http4s = "0.22.0-M7"
 
     val Log4jScala = "11.0"
     val Log4j = "2.10.0"
@@ -24,7 +24,7 @@ object Dependencies {
     "org.scalacheck"            %% "scalacheck"            % DependencyVersions.Scalacheck
   ).map( _ % Test)
 
-  val DispatcherDependencies: Seq[ModuleID] =Seq(
+  val DispatcherDependencies: Seq[ModuleID] = Seq(
     "io.grpc" % "grpc-netty-shaded" % scalapb.compiler.Version.grpcJavaVersion,
     "io.grpc" % "grpc-services" % scalapb.compiler.Version.grpcJavaVersion,
     "io.grpc"                   % "grpc-netty"             % scalapb.compiler.Version.grpcJavaVersion,
@@ -45,7 +45,6 @@ object Dependencies {
     "io.github.scalapb-json" %% "scalapb-circe" % "0.7.2",
     "io.monix" %% "monix-bio" % "1.1.0",
     "io.monix" %% "monix-kafka-1x" % DependencyVersions.MonixKafka
-
   )
 
   val WorkerDependencies: Seq[ModuleID] =Seq(

@@ -1,10 +1,10 @@
-package monix.mini.platform.master.http
+package monix.mini.platform.dispatcher.http
 
 import com.typesafe.scalalogging.LazyLogging
 import io.circe.generic.auto._
 import monix.eval.Task
-import monix.mini.platform.master.Dispatcher
-import monix.mini.platform.master.kafka.KafkaPublisher
+import monix.mini.platform.dispatcher.Dispatcher
+import monix.mini.platform.dispatcher.kafka.KafkaPublisher
 import monix.mini.platform.protocol.{ Buy, Pawn, Sell }
 import org.http4s.circe.jsonOf
 import org.http4s.dsl.Http4sDsl
@@ -35,19 +35,19 @@ trait ActionRoutes extends Http4sDsl[Task] with LazyLogging {
 
   val dispatcher: Dispatcher
 
-  lazy val routes: HttpRoutes[Task] = HttpRoutes.of[Task] {
+  lazy val actionRoutes: HttpRoutes[Task] = HttpRoutes.of[Task] {
 
-    case req@POST -> Root / "item" / "action" / "buy" =>
+    case req@POST -> Root / "buy" =>
       val buyEvent: Task[Buy] = req.as[BuyEntity].map(_.toProto)
       logger.info(s"Received Buy item event.")
       buyEvent.flatMap(dispatcher.publish(_, retries = 3))
 
-    case req@POST -> Root / "item" / "action" / "sell" =>
+    case req@POST -> Root / "sell" =>
       val sellEvent: Task[Sell] = req.as[SellEntity].map(_.toProto)
       logger.info(s"Received Sell item event.")
       sellEvent.flatMap(dispatcher.publish(_, retries = 3))
 
-    case req@POST -> Root / "item" / "action" / "pawn" =>
+    case req@POST -> Root / "pawn" =>
       val pawnEvent: Task[Pawn] = req.as[PawnEntity].map(_.toProto)
       logger.info(s"Received Pawn item event.")
       pawnEvent.flatMap(dispatcher.publish(_, retries = 3))

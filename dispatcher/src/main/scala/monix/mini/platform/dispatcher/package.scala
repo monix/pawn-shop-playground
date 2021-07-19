@@ -2,7 +2,7 @@ package monix.mini.platform
 
 import monix.execution.Scheduler
 
-package object master {
+package object dispatcher {
 
   val kafkaIo = Scheduler.io("kafka-io")
 }

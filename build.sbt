@@ -8,9 +8,9 @@ lazy val root = (project in file("."))
       version := Version.version
     )),
     publishArtifact := false,
-    name := "monix-mini-platform"
-  ).enablePlugins(DockerPlugin, JavaAppPackaging)
-        .aggregate(proto, dispatcher, worker, feeder)
+    name := "monix-mini-platform",
+    scalacOptions += "-Ypartial-unification"
+).enablePlugins(DockerPlugin, JavaAppPackaging).aggregate(proto, dispatcher, worker, feeder)
 
 lazy val dispatcher = (project in file("dispatcher"))
   .settings(
@@ -19,7 +19,8 @@ lazy val dispatcher = (project in file("dispatcher"))
     version := Version.dispatcherVersion,
     maintainer in Docker := "Pau Alarcón",
     dockerUsername in Docker := Some("paualarco"),
-    dockerBaseImage in Docker := "golang:1.10-alpine3.7"
+    dockerBaseImage in Docker := "golang:1.10-alpine3.7",
+    scalacOptions += "-Ypartial-unification"
   )
   .aggregate(proto)
   .dependsOn(proto)

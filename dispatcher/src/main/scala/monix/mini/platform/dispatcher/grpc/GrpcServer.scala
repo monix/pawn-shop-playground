@@ -1,37 +1,39 @@
-package monix.mini.platform.master.grpc
+package monix.mini.platform.dispatcher.grpc
 
 import com.typesafe.scalalogging.LazyLogging
 import io.grpc.protobuf.services.ProtoReflectionService
-import io.grpc.{ Server, ServerBuilder }
+import io.grpc.{Server, ServerBuilder}
 import monix.eval.Task
-import monix.execution.{ CancelableFuture, Scheduler }
-import monix.mini.platform.config.DispatcherConfig
-import monix.mini.platform.master.Dispatcher
+import monix.execution.{CancelableFuture, Scheduler}
+import monix.mini.platform.dispatcher.Dispatcher
+import monix.mini.platform.dispatcher.config.DispatcherConfig
 import monix.mini.platform.protocol.DispatcherProtocolGrpc.DispatcherProtocol
-import monix.mini.platform.protocol.{ JoinReply, JoinRequest, JoinResponse }
+import monix.mini.platform.protocol.{JoinReply, JoinRequest, JoinResponse}
 
 class GrpcServer(dispatcher: Dispatcher, config: DispatcherConfig, scheduler: Scheduler) extends LazyLogging { self =>
 
   private[this] var server: Server = null
 
+  implicit val s = scheduler
   logger.info(s"Starting grpc server on endpoint: ${config.grpcServer.endPoint}")
 
   private def start(): Unit = {
     server = ServerBuilder.forPort(config.grpcServer.port)
-      .addService(DispatcherProtocol.bindService(new DispatcherImpl, scheduler))
+      .addService(DispatcherProtocol.bindService(new DispatcherImpl, s))
       .addService(ProtoReflectionService.newInstance())
       .build.start
     sys.addShutdownHook {
       System.err.println("*** shutting down gRPC server since JVM is shutting down")
-      self.stop()
+      self.stop
       System.err.println("*** server shut down")
     }
   }
 
-  def stop(): Task[Unit] = {
+  def stop: Task[Unit] = {
     if (server != null) {
       Task.evalAsync(server.shutdown())
     }
+    else Task.unit
   }
 
   def blockUntilShutdown(): Unit = {

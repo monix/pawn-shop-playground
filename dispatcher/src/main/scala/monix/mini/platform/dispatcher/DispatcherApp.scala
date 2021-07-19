@@ -1,11 +1,12 @@
-package monix.mini.platform.master
+package monix.mini.platform.dispatcher
 
 import cats.effect.ExitCode
 import com.typesafe.scalalogging.LazyLogging
-import monix.eval.{ Task, TaskApp }
+import monix.eval.{Task, TaskApp}
 import monix.execution.Scheduler
-import monix.mini.platform.config.DispatcherConfig
-import monix.mini.platform.master.http.HttpServer
+import monix.mini.platform.dispatcher.config.DispatcherConfig
+import monix.mini.platform.dispatcher.grpc.GrpcServer
+import monix.mini.platform.dispatcher.http.HttpServer
 
 import scala.concurrent.duration._
 
@@ -26,8 +27,8 @@ object DispatcherApp extends TaskApp with LazyLogging {
               _ <- Task.race(
                   Task.evalAsync(grpcServer)
                           .map(_.blockUntilShutdown())
-                          .guarantee(grpcServer.stop())
-                  , httpServer.bindAndNeverTerminate.start)
+                          .guarantee(grpcServer.stop)
+                  , httpServer.bindAndNeverTerminate)
           } yield ()
       }.redeem(ex => {
           logger.error(s"Application server error", ex)
