@@ -12,7 +12,7 @@ private class WorkerProtocolImpl(itemCol: CollectionOperator[Item])(implicit sch
 
   override def fetchItemById(request: FetchByIdRequest): Future[FetchItemResponse] = {
     logger.debug(s"Received fetch by id request: ${request}")
-    itemCol.source.find(Filters.eq("itemId", request.id)).headOptionL.map(FetchItemResponse.of).runToFuture
+    itemCol.source.find(Filters.eq("id", request.id)).headOptionL.map(FetchItemResponse.of).runToFuture
   }
 
   override def fetchItemsByName(request: FetchByNameRequest): Future[FetchItemsResponse] = {

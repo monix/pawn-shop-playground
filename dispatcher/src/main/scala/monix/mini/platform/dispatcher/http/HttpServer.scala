@@ -12,12 +12,11 @@ import monix.mini.platform.protocol.{Buy, Item, Pawn, Sell}
 import org.http4s.server.Router
 import org.http4s.server.blaze.BlazeServerBuilder
 
-class HttpServer(config: DispatcherConfig, s: Scheduler)(implicit ce: ConcurrentEffect[Task]) extends CoreRoutes with ActionRoutes with LazyLogging {
+class HttpServer(config: DispatcherConfig, val dispatcher: Dispatcher, s: Scheduler)(implicit ce: ConcurrentEffect[Task]) extends CoreRoutes with ActionRoutes with LazyLogging {
 
     logger.info(s"Starting http server on endpoint: ${config.httpServer.endPoint}")
     val kafkaConfig = config.kafka
     implicit val kafkaProducerConfig = kafkaConfig.producerConfig
-    override val dispatcher: Dispatcher = new Dispatcher(config)
     override val itemPublisher: KafkaPublisher[Item] = new KafkaPublisher[Item](kafkaConfig.itemsTopic)
     override val buyPublisher: KafkaPublisher[Buy] = new KafkaPublisher[Buy](kafkaConfig.buyEventsTopic)
     override val sellPublisher: KafkaPublisher[Sell] = new KafkaPublisher[Sell](kafkaConfig.sellEventsTopic)

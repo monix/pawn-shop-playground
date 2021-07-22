@@ -2,7 +2,7 @@ package monix.mini.platform.dispatcher
 
 import com.typesafe.scalalogging.LazyLogging
 import io.grpc.ManagedChannelBuilder
-import monix.catnap.MVar
+import cats.effect.concurrent.{MVar, MVar2, Ref}
 import monix.eval.Task
 import monix.mini.platform.dispatcher.config.DispatcherConfig
 import monix.mini.platform.dispatcher.domain.WorkerRef
@@ -12,11 +12,9 @@ import monix.mini.platform.protocol._
 import scala.concurrent.Future
 import scala.util.Random.shuffle
 import scalapb.GeneratedMessage
-import cats.effect.{Async, Concurrent, ContextShift}
+import cats.effect.ContextShift
 
-class Dispatcher(config: DispatcherConfig)(implicit contextShift: ContextShift[Task]) extends LazyLogging {
-
-  private val workers: Task[MVar[Task, Seq[WorkerRef]]] = MVar[Task].of[Seq[WorkerRef]](Seq.empty).memoize
+class Dispatcher(config: DispatcherConfig, ref: Ref[Task, Seq[WorkerRef]])(implicit contextShift: ContextShift[Task]) extends LazyLogging {
 
   def createSlaveRef(workerInfo: WorkerInfo): WorkerRef = {
     val channel = ManagedChannelBuilder.forAddress(workerInfo.host, workerInfo.port).usePlaintext().build()
@@ -30,26 +28,16 @@ class Dispatcher(config: DispatcherConfig)(implicit contextShift: ContextShift[T
   def addNewSlave(workerInfo: WorkerInfo): Task[JoinResponse] = {
     val workerRef = createSlaveRef(workerInfo)
     for {
-      mvar <- workers
-      seq <- mvar.take
-      joinResponse <- {
-        if (seq.size < 10) {
-          val updatedSlaves = Seq(workerRef)
-          logger.info(s"Filling MVar with ${workerRef}, is empty: ${mvar.isEmpty}")
-          mvar.put(updatedSlaves).map(_ => JoinResponse.JOINED)
-        } else {
-          Task.now(JoinResponse.REJECTED)
-        }
-      }
-    } yield joinResponse
+      _ <- ref.update(currentWorkers => currentWorkers.++(Seq(workerRef)))
+      _ = logger.info(s"Filling Ref with ${workerRef}.")
+    } yield (JoinResponse.JOINED)
   }
 
   def chooseSlave: Task[Option[WorkerRef]] = {
     for {
-      mvar <- workers
-      slaves <- mvar.read
+      slaves <- ref.get
       next <- Task.now {
-        val slaveRef = shuffle(slaves).headOption
+        val slaveRef = slaves.headOption
         logger.info(s"Chosen slave ref ${slaveRef} from the available list of workers: ${slaves}")
         slaveRef
       }

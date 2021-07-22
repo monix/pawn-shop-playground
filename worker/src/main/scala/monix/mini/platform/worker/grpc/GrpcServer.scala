@@ -1,7 +1,7 @@
 package monix.mini.platform.worker.grpc
 
 import com.typesafe.scalalogging.LazyLogging
-import io.grpc.{ Server, ServerBuilder }
+import io.grpc.{Server, ServerBuilder}
 import monix.connect.mongodb.client.CollectionOperator
 import monix.execution.Scheduler
 import monix.mini.platform.protocol.Item

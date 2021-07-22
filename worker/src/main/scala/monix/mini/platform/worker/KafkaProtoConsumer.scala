@@ -4,6 +4,8 @@ import monix.kafka.{CommittableMessage, Deserializer, KafkaConsumerConfig, Kafka
 import monix.kafka.Deserializer.{forStrings, fromKafkaDeserializer}
 import monix.mini.platform.protocol.Item
 import monix.reactive.Observable
+import scalapb.GeneratedEnum
+
 import scalapb.{GeneratedMessage, GeneratedMessageCompanion}
 import org.apache.kafka.common.serialization.{Deserializer => KafkaDeserializer}
 

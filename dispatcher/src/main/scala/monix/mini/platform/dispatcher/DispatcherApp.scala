@@ -1,10 +1,12 @@
 package monix.mini.platform.dispatcher
 
 import cats.effect.ExitCode
+import cats.effect.concurrent.Ref
 import com.typesafe.scalalogging.LazyLogging
 import monix.eval.{Task, TaskApp}
 import monix.execution.Scheduler
 import monix.mini.platform.dispatcher.config.DispatcherConfig
+import monix.mini.platform.dispatcher.domain.WorkerRef
 import monix.mini.platform.dispatcher.grpc.GrpcServer
 import monix.mini.platform.dispatcher.http.HttpServer
 
@@ -20,10 +22,11 @@ object DispatcherApp extends TaskApp with LazyLogging {
       {
           for {
               config <- Task.evalAsync(DispatcherConfig.load()).memoizeOnSuccess
+               workers <- Ref[Task].of[Seq[WorkerRef]](Seq.empty).memoizeOnSuccess
               _ = logger.info(s"Starting master server with config: $config")
-              dispatcher: Dispatcher = new Dispatcher(config)
+              dispatcher: Dispatcher = new Dispatcher(config, workers)
               grpcServer = GrpcServer(dispatcher, config, grpcScheduler)
-              httpServer = new HttpServer(config, httpScheduler)
+              httpServer = new HttpServer(config, dispatcher, httpScheduler)
               _ <- Task.race(
                   Task.evalAsync(grpcServer)
                           .map(_.blockUntilShutdown())
