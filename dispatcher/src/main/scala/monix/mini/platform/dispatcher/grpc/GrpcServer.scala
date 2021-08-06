@@ -2,13 +2,13 @@ package monix.mini.platform.dispatcher.grpc
 
 import com.typesafe.scalalogging.LazyLogging
 import io.grpc.protobuf.services.ProtoReflectionService
-import io.grpc.{Server, ServerBuilder}
+import io.grpc.{ Server, ServerBuilder }
 import monix.eval.Task
-import monix.execution.{CancelableFuture, Scheduler}
+import monix.execution.{ CancelableFuture, Scheduler }
 import monix.mini.platform.dispatcher.Dispatcher
 import monix.mini.platform.dispatcher.config.DispatcherConfig
 import monix.mini.platform.protocol.DispatcherProtocolGrpc.DispatcherProtocol
-import monix.mini.platform.protocol.{JoinReply, JoinRequest, JoinResponse}
+import monix.mini.platform.protocol.{ JoinReply, JoinRequest, JoinResponse }
 
 class GrpcServer(dispatcher: Dispatcher, config: DispatcherConfig, scheduler: Scheduler) extends LazyLogging { self =>
 
@@ -32,8 +32,7 @@ class GrpcServer(dispatcher: Dispatcher, config: DispatcherConfig, scheduler: Sc
   def stop: Task[Unit] = {
     if (server != null) {
       Task.evalAsync(server.shutdown())
-    }
-    else Task.unit
+    } else Task.unit
   }
 
   def blockUntilShutdown(): Unit = {

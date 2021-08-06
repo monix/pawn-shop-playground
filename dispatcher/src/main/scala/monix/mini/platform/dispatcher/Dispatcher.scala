@@ -2,7 +2,7 @@ package monix.mini.platform.dispatcher
 
 import com.typesafe.scalalogging.LazyLogging
 import io.grpc.ManagedChannelBuilder
-import cats.effect.concurrent.{MVar, MVar2, Ref}
+import cats.effect.concurrent.{ MVar, MVar2, Ref }
 import monix.eval.Task
 import monix.mini.platform.dispatcher.config.DispatcherConfig
 import monix.mini.platform.dispatcher.domain.WorkerRef
@@ -26,6 +26,7 @@ class Dispatcher(config: DispatcherConfig, ref: Ref[Task, Seq[WorkerRef]])(impli
     publisher.publish(event, retries).void
 
   def addNewSlave(workerInfo: WorkerInfo): Task[JoinResponse] = {
+    logger.info(s"Adding new worker to the quorum: $workerInfo")
     val workerRef = createSlaveRef(workerInfo)
     for {
       _ <- ref.update(currentWorkers => currentWorkers.++(Seq(workerRef)))
@@ -51,14 +52,13 @@ class Dispatcher(config: DispatcherConfig, ref: Ref[Task, Seq[WorkerRef]])(impli
 
   def fetchItem(fetchByNameRequest: FetchByNameRequest): Task[FetchItemsResponse] = {
     logger.debug("Dispatching transaction")
-    dispatch((slaveRef: WorkerRef) => slaveRef.stub.fetchItemsByName(fetchByNameRequest)
-    )
+    dispatch((slaveRef: WorkerRef) => slaveRef.stub.fetchItemsByName(fetchByNameRequest))
   }
 
   def fetchItem(fetchByCategoryRequest: FetchByCategoryRequest): Task[FetchItemsResponse] = {
     logger.debug("Dispatching FetchByCategoryRequest")
     dispatch((slaveRef: WorkerRef) =>
-        slaveRef.stub.fetchItemsByCategory(fetchByCategoryRequest))
+      slaveRef.stub.fetchItemsByCategory(fetchByCategoryRequest))
   }
 
   def fetchItem(fetchByStateRequest: FetchByStateRequest): Task[FetchItemsResponse] = {
@@ -77,7 +77,6 @@ class Dispatcher(config: DispatcherConfig, ref: Ref[Task, Seq[WorkerRef]])(impli
       }
     } yield response
   }
-
 
 }
 

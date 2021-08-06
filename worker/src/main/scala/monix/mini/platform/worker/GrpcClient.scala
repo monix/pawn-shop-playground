@@ -21,7 +21,7 @@ class GrpcClient(config: WorkerConfig) extends LazyLogging {
           logger.info(s"Remaining join retries ${retries}")
           sendJoinRequest(retries - 1).delayExecution(backoffDelay)
         } else {
-          logger.error(s"Reached maximum join request attemts with exception", ex)
+          logger.error(s"Reached maximum join request attempts with exception", ex)
           Task.raiseError(ex)
         }
       }

@@ -1,17 +1,23 @@
 package monix.mini.platform.worker.mongo
 
+import com.typesafe.scalalogging.LazyLogging
 import monix.mini.platform.protocol.{Category, State}
 import org.bson.codecs.configuration.{CodecProvider, CodecRegistry}
 import org.bson.codecs.{Codec, DecoderContext, EncoderContext}
 import org.bson.{BsonReader, BsonWriter}
 import scalapb.UnknownFieldSet
 
-object Codecs {
+object Codecs extends LazyLogging {
 
   val protoCodecProvider: CodecProvider = new CodecProvider {
     override def get[T](clazz: Class[T], registry: CodecRegistry): Codec[T] = {
       if (Category.values.exists(clazz == _.getClass)) CategoryCodec.asInstanceOf[Codec[T]]
+      else if (clazz == classOf[Category]) CategoryCodec.asInstanceOf[Codec[T]]
       else if (State.values.exists(clazz == _.getClass)) StateCodec.asInstanceOf[Codec[T]]
+      else if (clazz == classOf[State]) {
+        logger.debug("Using State Codec.")
+        StateCodec.asInstanceOf[Codec[T]]
+      }
       else if (clazz == UnknownFieldSet.empty.getClass) UnknownFieldSetCodec.asInstanceOf[Codec[T]]
       else null
     }

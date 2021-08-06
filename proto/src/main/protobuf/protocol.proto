@@ -95,12 +95,19 @@ message Item {
   int32 ageInMonths = 6;
 }
 
-message FetchItemResponse {
+message ItemWithHistory {
   Item item = 1;
+  repeated Buy buys = 2;
+  repeated Sell sells = 3;
+  repeated Pawn pawns = 4;
+}
+
+message FetchItemResponse {
+  ItemWithHistory item = 1;
 }
 
 message FetchItemsResponse {
-  repeated Item items = 1;
+  repeated ItemWithHistory items = 1;
 }
 
 message Ack {}

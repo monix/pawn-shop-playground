@@ -14,9 +14,9 @@ class WorkerFlow[T <: GeneratedMessage](kafkaConsumer: KafkaProtoConsumer[T], mo
         mongoSingle.insertOne(value)
           .onErrorHandle(logger.error("Error found inserting into mongo... ", _)) >>
           committableMessage.committableOffset
-            .commitAsync()
-            .onErrorRestart(committableErrorRetries)
-            .onErrorHandle(logger.error("Error found committing offset... ", _))
+          .commitAsync()
+          .onErrorRestart(committableErrorRetries)
+          .onErrorHandle(logger.error("Error found committing offset... ", _))
     }
   }
 

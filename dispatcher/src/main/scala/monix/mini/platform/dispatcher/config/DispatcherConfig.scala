@@ -40,11 +40,11 @@ object DispatcherConfig {
     port: Int,
     endPoint: String)
 
-  case class KafkaConfiguration(itemsTopic: String,
-                                buyEventsTopic: String,
-                                sellEventsTopic: String,
-                                pawnEventsTopic: String) {
-
+  case class KafkaConfiguration(
+    itemsTopic: String,
+    buyEventsTopic: String,
+    sellEventsTopic: String,
+    pawnEventsTopic: String) {
 
     val producerConfig: KafkaProducerConfig = KafkaProducerConfig.default
 
