@@ -6,3 +6,5 @@ worker/target/
 target/
 
 minio/
+
+.bsp/
