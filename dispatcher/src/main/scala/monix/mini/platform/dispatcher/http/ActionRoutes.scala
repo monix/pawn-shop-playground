@@ -27,17 +27,17 @@ trait ActionRoutes extends Http4sDsl[Task] with LazyLogging {
 
   lazy val actionRoutes: HttpRoutes[Task] = HttpRoutes.of[Task] {
 
-    case req @ POST -> Root / "item" / "action" / "buy" =>
+    case req @ POST -> Root / "buy" =>
       val buyEvent: Task[Buy] = req.as[BuyEntity].map(_.toProto)
       logger.info(s"Received Buy item event.")
       buyEvent.flatMap(dispatcher.publish(_))
 
-    case req @ POST -> Root / "item" / "action" / "sell" =>
+    case req @ POST -> Root / "sell" =>
       val sellEvent: Task[Sell] = req.as[SellEntity].map(_.toProto)
       logger.info(s"Received Sell item event.")
       sellEvent.flatMap(dispatcher.publish(_))
 
-    case req @ POST -> Root / "item" / "action" / "pawn" =>
+    case req @ POST -> Root / "pawn" =>
       val pawnEvent: Task[Pawn] = req.as[PawnEntity].map(_.toProto)
       logger.info(s"Received Pawn item event.")
       pawnEvent.flatMap(dispatcher.publish(_))

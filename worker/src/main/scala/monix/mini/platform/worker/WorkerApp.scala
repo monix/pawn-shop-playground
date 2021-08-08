@@ -25,9 +25,9 @@ object WorkerApp extends TaskApp with LazyLogging {
 
     val auctionDbName = "auction-monix-db"
     val itemColRef: CollectionRef[Item] = CollectionCodecRef(auctionDbName, "item", classOf[Item], createCodecProvider[Item](), protoCodecProvider)
-    val buyActionsColRef: CollectionRef[Buy] = CollectionCodecRef(auctionDbName, "buy-actions", classOf[Buy], createCodecProvider[Buy](), protoCodecProvider)
-    val sellActionsColRef: CollectionRef[Sell] = CollectionCodecRef(auctionDbName, "sell-actions", classOf[Sell], createCodecProvider[Sell](), protoCodecProvider)
-    val pawnActionsColRef: CollectionRef[Pawn] = CollectionCodecRef(auctionDbName, "pawn-actions", classOf[Pawn], createCodecProvider[Pawn](), protoCodecProvider)
+    val buyActionsColRef: CollectionRef[Buy] = CollectionCodecRef(auctionDbName, "buyActions", classOf[Buy], createCodecProvider[Buy](), protoCodecProvider)
+    val sellActionsColRef: CollectionRef[Sell] = CollectionCodecRef(auctionDbName, "sellActions", classOf[Sell], createCodecProvider[Sell](), protoCodecProvider)
+    val pawnActionsColRef: CollectionRef[Pawn] = CollectionCodecRef(auctionDbName, "pawnActions", classOf[Pawn], createCodecProvider[Pawn](), protoCodecProvider)
 
     val connectionStr = "mongodb://localhost:27017"
 

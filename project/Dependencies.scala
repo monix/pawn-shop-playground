@@ -36,7 +36,8 @@ object Dependencies {
     "ch.qos.logback" % "logback-classic" % "1.2.3",
     "com.github.pureconfig"     %% "pureconfig"            % DependencyVersions.PureConfig,
     "io.monix" %% "monix-bio" % "1.1.0",
-    "io.monix" %% "monix-kafka-1x" % DependencyVersions.MonixKafka
+    "io.monix" %% "monix-kafka-1x" % DependencyVersions.MonixKafka,
+    "org.scalatest"             %% "scalatest"             % DependencyVersions.Scalatest
   ) ++ TestDependencies
 
   val WorkerDependencies: Seq[ModuleID] =Seq(

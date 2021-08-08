@@ -11,7 +11,7 @@ import org.apache.kafka.common.serialization.{ Deserializer => KafkaDeserializer
 
 import java.util
 
-class KafkaProtoConsumer[T <: GeneratedMessage](topic: String)(implicit kafkaConsumerConfig: KafkaConsumerConfig, gMCompanion: GeneratedMessageCompanion[T]) {
+class KafkaProtoConsumer[T <: GeneratedMessage](val topic: String)(implicit kafkaConsumerConfig: KafkaConsumerConfig, gMCompanion: GeneratedMessageCompanion[T]) {
 
   private def deserializeMessage(message: Array[Byte]): T = gMCompanion.parseFrom(message)
 

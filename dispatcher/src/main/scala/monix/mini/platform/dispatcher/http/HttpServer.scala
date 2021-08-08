@@ -22,7 +22,7 @@ class HttpServer(config: DispatcherConfig, val dispatcher: Dispatcher, s: Schedu
   override val sellPublisher: KafkaPublisher[Sell] = new KafkaPublisher[Sell](kafkaConfig.sellEventsTopic)
   override val pawnPublisher: KafkaPublisher[Pawn] = new KafkaPublisher[Pawn](kafkaConfig.pawnEventsTopic)
 
-  val httpApp = Router("/item" -> coreRoutes, "/action" -> actionRoutes).orNotFound
+  val httpApp = Router("/item" -> coreRoutes, "/item/action" -> actionRoutes).orNotFound
 
   def bindAndNeverTerminate: Task[Unit] =
     BlazeServerBuilder[Task](s)

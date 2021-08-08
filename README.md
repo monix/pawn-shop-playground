@@ -1,57 +1,85 @@
 # Mini Platform
 
-This project aims to show a **real example** of a mini microservices platform in the _financial services domain_ that is heavily _built up_ mostly with in _monix and its subprojects_.
+This project is **real example** of a microservices platform that is _built up_ with _monix, monix-kafka, monix-bio, monix-connect_ between other libraries.
 
-AThe platform entry point is an http endpoint that expects **transaction** and **operation** events to be sent
-    - [Transaction](https://github.com/monix/mini-platform/blob/master/common/src/main/protobuf/protocol.proto#L35):
-     Represents the client's action of sending a certain amount of money (transfering) to a different client. 
-    - [Operation](https://github.com/monix/mini-platform/blob/master/common/src/main/protobuf/protocol.proto#L23):
-     Represents the client's action of either doing a *deposit* or *withdraw*, and has to be physically done form one of the branches.
-     
-From these operation we can identify and register adjacent data, like the **interactions** with different clients when performing a transaction
- or the **branch** where an operation was realized. 
- 
-Apart of sending events, the http endpoint also exposes get operations to fetch the processed data, providing different alternatives to do so:
-Fetch all the data or only (transactions, operations, interactions or branches) of an specific client.
+This repo aims to be resource and *real example project* for building an application based on microservices by using 
+monix and its sub-projects.
 
-Now that we have already introduced a bit the domain, let's jum to the technical overview and design:
+### Domain 
 
-The mini platform is composed by mainly three different components, the _dispatcher_, _worker_ and the _feeder_. 
-They represent different type of applications which will be running in docker containers environment have its own purpose.   
+The application simulates the very bare logic of a possible backend for an auction shop.
+Where it defines an endpoint for adding `Items` and `Actions`, an action being `Buy`, `Sell` or `Pawn`. 
+On the other hand it also supports to fetch items with its actions history by the _id_, _name_, _category_ or _state_.
 
+### Architecture
+
+After having introduced the _domain_, let's jum to the technical side. 
+
+The platform is composed in two services, the _dispatcher_ and _worker_, and the communication is done via `gRPC` and `kafka`.
 
 ![Mini Platform Diagram](/mini-platform-diagram.png)
 
+## Dispatcher
+ The dispatcher represents the data entrypoint (**http**) and also acts like a router to dispatching 
+ incoming requests to the available workers (**gRPC**). 
+It is characterized for not implementing any database access,
+ but rather for organising and orchestrating the workload on the workers.
 
-### Dispatcher
+### Http
+
+Implements a **http server** that acts as the data entry point of the platform to add and fetch new `items`.
+The http routes are pretty minimal:
+- POST */item/add*
+- POST */item/action/buy*
+- POST */item/action/sell*
+- POST */item/action/pawn*
+- GET */item/fetch/{id}*
+- GET */item/fetch?name={name}*
+- GET */item/fetch?category={category}*
+- GET */item/fetch?state={state}*
+
+
+**Grpc** 
+ - **Server**: The grpc server implementation simply expects `JoinRequest`s from the workers, returning `JoinResponse`s which 
+ can be either `Joined` or `Rejected`. This acts like a very basic protocol for allowing to dynamically add new workers to the quorum,
+and providing scalability to the platform. 
+   Note: Nowadays this could be implemented much more easily by relying on an external discovery service and grpc load balancer.
  
- The core of the platform, it represents the http entry point that expects bank transactions/operations events, it is also
- caracterized for not implementing any database access, instead it communicates to the workers via _gRPC_ *proto*cols to let them do the hard work. 
- Grpc server: Implements a grpc endpoint that expects `JoinRequests` to be sent from the workers, returning the `JoinResponse` which 
- can be either `Joined` or `Rejected`. Allowing to dynamically add new worker to the cluster, and providing scalability to the platform.
- Grpc client: The dispatcher also acts as a grpc client that sends _transactions_, _operations_ and _fetch_ requests to
-	the worker. It will implement an internal grpc load balancer (i.e using Round Robin) to alternate requests between the existing _slaves_.
+- **Client**: The dispatcher also acts as a grpc client that sends _transactions_, _operations_ and _fetch_ requests to
+	its workers. As explained previously, there is an internal grpc load balancer that randomly chooses
+  a different worker to.
 
-### Workers
+## Workers
 
-They can be added on demand, scalable depending on the work flow. 
+
+
+They can be added on demand, scalable depending on the work flow.
+The grpc protocol is only designed for requesting (reading) data, on the other hand, 
+the data to be written is published into a broker, in which the worker will keep consuming and persisting to the database.
+
+### Grpc
+
+- **Client**
 Just right after starting the app, they will send the _JoinRequest_ grpc call to the dispatcher.
-Then, once the Worker is part of the cluster, it will expect calls from the dispatcher to fetch and persist data.
-    - Transaction/Operation Events: The different events will be persisted respectively in their _MongoDB_ collections for its later access, 
-        but before that, the worker will check in _Redis_ whether the client that the money is being send (in transactions) or the client that 
-        performs the withdraw (in operation) is a fraudster or not. In case it is, the event is marked as `Fraudulent` and not persisted in the db.
-      In case the client was not identified as a fraudster, the event will be persisted in Mongo and the _interactions_ and _branches_ information in _Redis_ for
-      its future faster access.   
-    - Fetch: There are defined different http endpoints for retreiving all the data or only the _transactions_, _operations_, _interactions_ or _branches_ of an specific client.
+  Then, if the response is a `Joined` it means that the worker was added to the quorum and that it will
+  start receiving grpc requests.
+  
+- **Server**
+The grpc server will only start after we have received a `Joined` confirmation from the dispatcher, at that point the worker will be entitled to receive `fetch` requests.
+   
+### Kafka
+The workers are continuously consuming events from the four different kafka topics (`item`, `buy-actions`, `sell-actions` and `pawn-actions`) that
+will be persisted afterwards to its respective collection in `MongoDb`.
+As the logic is shared between the four kind of events, it's implementation is generalized in the `InboundFlow` _type-class_.
+In order to storing the `protobuf` events directly to `Mongo`, it was required to define some [Codecs](/worker/src/main/scala/monix/mini/platform/worker/mongo/Codecs.scala).  
 
-
-### Feeder 
+## Feeder 
 
 A microservice that feeds _Redis_ with a list of _Fraudulent_ people that is downloaded from a datasource stored in _S3_.
 
 	
 
-### Future plans:
+## Future plans:
  - Write tests and create a CI pipeline.
  - If a write to the dispatcher failed or took more than X time, the dispatcher will cache that event to redis temporarly, 
 and there will be a scheduled job that checks if there is cached data, and if so, it will try to send them to one of the worker again.
