@@ -52,7 +52,7 @@ message Sell {
   string itemId = 2;
   int64 price = 3;
   string date = 4;
-  string profit = 5;
+  int64 profit = 5;
 }
 
 message Buy {
@@ -109,8 +109,6 @@ message FetchItemResponse {
 message FetchItemsResponse {
   repeated ItemWithHistory items = 1;
 }
-
-message Ack {}
 
 //join
 message JoinRequest {

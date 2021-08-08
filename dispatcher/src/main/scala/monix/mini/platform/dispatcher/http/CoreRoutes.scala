@@ -74,7 +74,7 @@ trait CoreRoutes extends Http4sDsl[Task] with LazyLogging {
         }
       } yield httpResponse
 
-    case _@ GET -> Root / "fetch" :? CategoryQueryParamMatcher(category)  =>
+    case _@ GET -> Root / "fetch" :? CategoryQueryParamMatcher(category) =>
       logger.debug(s"Fetch request by $category category received.")
       for {
         items <- dispatcher.fetchItem(FetchByCategoryRequest.of(category, 10))
@@ -86,7 +86,7 @@ trait CoreRoutes extends Http4sDsl[Task] with LazyLogging {
         }
       } yield httpResponse
 
-    case _@ GET -> Root / "fetch" :? StateQueryParamMatcher(state)=>
+    case _@ GET -> Root / "fetch" :? StateQueryParamMatcher(state) =>
       logger.debug(s"Fetch request by $state state received.")
       for {
         fetchItemsResponse <- dispatcher.fetchItem(FetchByStateRequest.of(state, 10))

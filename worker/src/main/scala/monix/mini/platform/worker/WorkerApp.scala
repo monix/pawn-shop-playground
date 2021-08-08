@@ -2,11 +2,11 @@ package monix.mini.platform.worker
 
 import cats.effect.ExitCode
 import com.typesafe.scalalogging.LazyLogging
-import monix.connect.mongodb.client.{CollectionCodecRef, CollectionRef, MongoConnection}
-import monix.eval.{Task, TaskApp}
+import monix.connect.mongodb.client.{ CollectionCodecRef, CollectionRef, MongoConnection }
+import monix.eval.{ Task, TaskApp }
 import monix.execution.Scheduler
 import monix.kafka.KafkaConsumerConfig
-import monix.mini.platform.protocol.{Buy, Item, JoinReply, JoinResponse, Pawn, Sell}
+import monix.mini.platform.protocol.{ Buy, Item, JoinReply, JoinResponse, Pawn, Sell }
 import monix.mini.platform.worker.mongo.Codecs.protoCodecProvider
 import monix.mini.platform.worker.config.WorkerConfig
 import monix.mini.platform.worker.grpc.GrpcServer
@@ -42,22 +42,21 @@ object WorkerApp extends TaskApp with LazyLogging {
 
     MongoConnection.create4(connectionStr, (itemColRef, buyActionsColRef, sellActionsColRef, pawnActionsColRef)).use {
       case (itemsOp, buyActionsOp, sellActionsOp, pawnActionsOp) =>
-      val grpcServer = new GrpcServer(config, itemsOp)(grpcScheduler)
-      GrpcClient(config)
-        .sendJoinRequest(3, 5.seconds)
-        .flatMap {
-          case JoinReply(JoinResponse.JOINED, _) => {
-            Task.raceMany(Seq(
-              Task.evalAsync(grpcServer.blockUntilShutdown()),
-              WorkerFlow(itemsKafkaConsumer, itemsOp.single).run().completedL,
-              WorkerFlow(buyActionsKafkaConsumer, buyActionsOp.single).run().completedL,
-              WorkerFlow(sellActionsKafkaConsumer, sellActionsOp.single).run().completedL,
-              WorkerFlow(pawnActionsKafkaConsumer, pawnActionsOp.single).run().completedL)
-            ).guarantee(Task(grpcServer.shutDown()))
-              .as(ExitCode.Success)
+        val grpcServer = new GrpcServer(config, itemsOp, buyActionsOp, sellActionsOp, pawnActionsOp)(grpcScheduler)
+        GrpcClient(config)
+          .sendJoinRequest(3, 5.seconds)
+          .flatMap {
+            case JoinReply(JoinResponse.JOINED, _) => {
+              Task.raceMany(Seq(
+                Task.evalAsync(grpcServer.blockUntilShutdown()),
+                WorkerFlow(itemsKafkaConsumer, itemsOp.single).run().completedL,
+                WorkerFlow(buyActionsKafkaConsumer, buyActionsOp.single).run().completedL,
+                WorkerFlow(sellActionsKafkaConsumer, sellActionsOp.single).run().completedL,
+                WorkerFlow(pawnActionsKafkaConsumer, pawnActionsOp.single).run().completedL)).guarantee(Task(grpcServer.shutDown()))
+                .as(ExitCode.Success)
+            }
+            case JoinReply(JoinResponse.REJECTED, _) => Task.now(ExitCode.Error)
           }
-          case JoinReply(JoinResponse.REJECTED, _) => Task.now(ExitCode.Error)
-        }
     }
   }
 

@@ -1,7 +1,6 @@
 package monix.mini.platform.dispatcher.grpc
 
 import com.typesafe.scalalogging.LazyLogging
-import io.grpc.protobuf.services.ProtoReflectionService
 import io.grpc.{ Server, ServerBuilder }
 import monix.eval.Task
 import monix.execution.{ CancelableFuture, Scheduler }
@@ -20,7 +19,6 @@ class GrpcServer(dispatcher: Dispatcher, config: DispatcherConfig, scheduler: Sc
   private def start(): Unit = {
     server = ServerBuilder.forPort(config.grpcServer.port)
       .addService(DispatcherProtocol.bindService(new DispatcherImpl, s))
-      .addService(ProtoReflectionService.newInstance())
       .build.start
     sys.addShutdownHook {
       System.err.println("*** shutting down gRPC server since JVM is shutting down")

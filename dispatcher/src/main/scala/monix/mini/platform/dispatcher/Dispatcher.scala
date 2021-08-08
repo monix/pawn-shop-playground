@@ -22,7 +22,7 @@ class Dispatcher(config: DispatcherConfig, ref: Ref[Task, Seq[WorkerRef]])(impli
     domain.WorkerRef(workerInfo.workerId, stub)
   }
 
-  def publish[T <: GeneratedMessage](event: T, retries: Int)(implicit publisher: KafkaPublisher[T]): Task[Unit] =
+  def publish[T <: GeneratedMessage](event: T, retries: Int = 3)(implicit publisher: KafkaPublisher[T]): Task[Unit] =
     publisher.publish(event, retries).void
 
   def addNewSlave(workerInfo: WorkerInfo): Task[JoinResponse] = {

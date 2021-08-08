@@ -28,7 +28,7 @@ object DispatcherConfig {
   implicit val encodeDuration: Encoder[FiniteDuration] = Encoder.instance(duration ⇒ Json.fromString(duration.toString))
   implicit val encodeLocalDate: Encoder[LocalDate] = Encoder.instance(date ⇒ Json.fromString(date.format(ISO_DATE)))
 
-  def load(): DispatcherConfig = loadConfigOrThrow[DispatcherConfig]
+  def load(): DispatcherConfig = ConfigSource.default.loadOrThrow[DispatcherConfig]
 
   case class HttpServerConfiguration(
     host: String,
