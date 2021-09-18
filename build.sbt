@@ -1,8 +1,7 @@
 import com.typesafe.sbt.SbtNativePackager.autoImport.maintainer
-import sbt.Def
 
 lazy val sharedSettings = Seq(
-  scalaVersion       := "2.13.4",
+  scalaVersion       := "2.13.5",
   organization := "io.monix",
   scalacOptions ++= Seq(
     "-Ywarn-unused:imports", // Warn if an import selector is not referenced.
@@ -18,9 +17,7 @@ lazy val sharedSettings = Seq(
     "-Xlint:poly-implicit-overload", // parameterized overloaded implicit methods are not visible as view bounds
     "-Xlint:option-implicit", // Option.apply used implicit view
     "-Xlint:delayedinit-select" // Selecting member of DelayedInit
-  ),
-  parallelExecution in Test             := true,
-  autoScalaLibrary := false
+  )
 )
 
 lazy val root = (project in file("."))
@@ -28,40 +25,53 @@ lazy val root = (project in file("."))
     publishArtifact := false,
     name := "monix-mini-platform"
     //scalacOptions += "-Ypartial-unification"
-).settings(sharedSettings)
-  .enablePlugins(DockerPlugin, JavaAppPackaging)
+  )
   .aggregate(dispatcher, worker, proto)
 
 lazy val dispatcher = (project in file("dispatcher"))
+  .dependsOn(proto)
+  .aggregate(proto)
+
   .settings(
     name := "dispatcher",
-    libraryDependencies ++= Dependencies.DispatcherDependencies
-    //version := Version.dispatcherVersion,
-    //maintainer in Docker := "Pau Alarcón",
-    //dockerUsername in Docker := Some("paualarco"),
-    //dockerBaseImage in Docker := "golang:1.10-alpine3.7",
+    libraryDependencies ++= Dependencies.DispatcherDependencies,
+    version := Version.dispatcherVersion,
+    maintainer in Docker := "Pau Alarcón",
+    dockerUsername in Docker := Some("paualarco"),
+    dockerBaseImage in Docker := "golang:1.10-alpine3.7",
   ).settings(sharedSettings)
   .enablePlugins(DockerPlugin, JavaAppPackaging)
-  .aggregate(proto)
-  .dependsOn(proto)
 
 lazy val worker = (project in file("worker"))
+  .dependsOn(proto)
+  .aggregate(proto)
   .settings(
     name := "worker",
     libraryDependencies ++= Dependencies.WorkerDependencies,
-    //version := Version.workerVersion,
-    //maintainer in Docker := "Pau Alarcón",
-    //dockerUsername in Docker := Some("paualarco")
+    version := Version.workerVersion,
+    maintainer in Docker := "Pau Alarcón",
+    dockerUsername in Docker := Some("paualarco")
   ).settings(sharedSettings)
   .enablePlugins(DockerPlugin, JavaAppPackaging)
-  .dependsOn(proto)
+
 
 lazy val proto = (project in file("proto"))
   .settings(
     name := "proto",
-    PB.targets in Compile := Seq(
-      scalapb.gen() -> (sourceManaged in Compile).value / "scalapb"
+     Compile / PB.targets := Seq(
+      scalapb.gen() -> (Compile / sourceManaged).value / "scalapb"
     ),
     libraryDependencies ++= Dependencies.ProtobufDependencies
     //version := Version.version
   ).settings(sharedSettings)
+
+lazy val e2e = (project in file("e2e"))
+  .settings(
+    name := "e2e",
+    libraryDependencies ++= Dependencies.IntegrationTestDependencies,
+    //version := Version.workerVersion,
+    //Docker / maintainer := "Pau Alarcón",
+    //Docker / dockerUsername := Some("paualarco")
+  ).settings(sharedSettings)
+  .enablePlugins(DockerPlugin, JavaAppPackaging)
+

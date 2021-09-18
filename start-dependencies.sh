@@ -24,7 +24,7 @@ docker-compose -f ./docker-compose.yml up -d zookeeper broker
 
 sleep 30
 
-create_topic items-events 1 1
+create_topic items 1 1
 create_topic buy-events 1 1
 create_topic sell-events 1 1
 create_topic pawn-events 1 1
@@ -41,6 +41,9 @@ docker-compose -f ./docker-compose.yml up -d worker
 
 # mkdir ./minio/data/mini-monix-platform/feeder-data/
 # cp ./feeder/src/test/resources/fraudsters.txt ./minio/data/mini-monix-platform/feeder-data/fraudsters.txt
+
+
+
 echo -e "Docker ps."
 docker ps
 

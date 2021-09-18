@@ -2,7 +2,6 @@ package monix.mini.platform.dispatcher
 
 import com.typesafe.scalalogging.LazyLogging
 import io.grpc.ManagedChannelBuilder
-import cats.effect.concurrent.{ MVar, MVar2, Ref }
 import monix.eval.Task
 import monix.mini.platform.dispatcher.config.DispatcherConfig
 import monix.mini.platform.dispatcher.domain.WorkerRef
@@ -13,6 +12,7 @@ import scala.concurrent.Future
 import scala.util.Random.shuffle
 import scalapb.GeneratedMessage
 import cats.effect.ContextShift
+import cats.effect.concurrent.Ref
 
 class Dispatcher(config: DispatcherConfig, ref: Ref[Task, Seq[WorkerRef]])(implicit contextShift: ContextShift[Task]) extends LazyLogging {
 

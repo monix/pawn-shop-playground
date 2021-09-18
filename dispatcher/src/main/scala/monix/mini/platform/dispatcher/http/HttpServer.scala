@@ -1,6 +1,6 @@
 package monix.mini.platform.dispatcher.http
 
-import cats.effect.{ ConcurrentEffect, ContextShift }
+import cats.effect.ConcurrentEffect
 import com.typesafe.scalalogging.LazyLogging
 import monix.eval.Task
 import monix.execution.Scheduler

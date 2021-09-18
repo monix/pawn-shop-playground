@@ -37,14 +37,9 @@ object Dependencies {
     "com.github.pureconfig"     %% "pureconfig"            % DependencyVersions.PureConfig,
     "io.monix" %% "monix-bio" % "1.1.0",
     "io.monix" %% "monix-kafka-1x" % DependencyVersions.MonixKafka,
-    "org.scalatest"             %% "scalatest"             % DependencyVersions.Scalatest
   ) ++ TestDependencies
 
   val WorkerDependencies: Seq[ModuleID] =Seq(
-    "io.grpc" % "grpc-netty-shaded" % scalapb.compiler.Version.grpcJavaVersion,
-    "io.grpc"                   % "grpc-netty"             % scalapb.compiler.Version.grpcJavaVersion,
-    "com.thesamet.scalapb"      %% "scalapb-runtime-grpc"  % scalapb.compiler.Version.scalapbVersion,
-    "com.thesamet.scalapb"      %% "scalapb-runtime"       % scalapb.compiler.Version.scalapbVersion % "protobuf",
     "io.monix"                  %% "monix"                 % DependencyVersions.Monix,
     "io.monix"                  %% "monix-mongodb"         % DependencyVersions.MonixConnect,
     "io.monix" %% "monix-redis" % DependencyVersions.MonixConnect,
@@ -70,8 +65,23 @@ object Dependencies {
   val ProtobufDependencies: Seq[ModuleID] =Seq(
     "io.grpc"                   % "grpc-netty"             % scalapb.compiler.Version.grpcJavaVersion,
     "com.thesamet.scalapb"      %% "scalapb-runtime-grpc"  % scalapb.compiler.Version.scalapbVersion,
-    "com.thesamet.scalapb"      %% "scalapb-runtime"       % scalapb.compiler.Version.scalapbVersion % "protobuf",
-    "com.thesamet.scalapb" %% "compilerplugin" % "0.11.3"
+    "com.thesamet.scalapb"      %% "scalapb-runtime"       % scalapb.compiler.Version.scalapbVersion % "protobuf"
   )
+
+  val IntegrationTestDependencies: Seq[ModuleID] =Seq(
+    "io.monix"                  %% "monix"                 % DependencyVersions.Monix,
+    "io.monix"                  %% "monix-mongodb"         % DependencyVersions.MonixConnect,
+    "com.github.pureconfig"     %% "pureconfig"            % DependencyVersions.PureConfig,
+    "org.http4s"                %% "http4s-server"         % DependencyVersions.Http4s,
+    "org.http4s"                %% "http4s-core"           % DependencyVersions.Http4s,
+    "org.http4s"                %% "http4s-dsl"            % DependencyVersions.Http4s,
+    "org.http4s"                %% "http4s-circe"          % DependencyVersions.Http4s,
+    // Optional for auto-derivation of JSON codecs
+    "io.circe" %% "circe-generic" % "0.13.0",
+    // Optional for string interpolation to JSON model
+    "io.circe" %% "circe-literal" % "0.13.0",
+    "org.http4s"                %% "http4s-blaze-client"   % DependencyVersions.Http4s,
+    "io.monix" %% "monix-kafka-1x" % DependencyVersions.MonixKafka
+  ) ++ TestDependencies
 
 }

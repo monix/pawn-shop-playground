@@ -8,3 +8,9 @@ target/
 minio/
 
 .bsp/
+
+project/.bloop/
+
+project/project/
+
+project/metals.sbt

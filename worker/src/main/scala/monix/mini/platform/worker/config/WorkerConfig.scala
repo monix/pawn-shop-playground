@@ -10,7 +10,7 @@ object WorkerConfig {
 
   implicit val confHint: ProductHint[WorkerConfig] = ProductHint[WorkerConfig](ConfigFieldMapping(CamelCase, KebabCase))
 
-  def load(): WorkerConfig = loadConfigOrThrow[WorkerConfig]
+  def load(): Result[A] = ConfigSource.default.load[WorkerConfig]
 
   case class GrpcServerConfig(
     host: String,
@@ -22,8 +22,10 @@ object WorkerConfig {
     port: Int,
     url: String,
     database: String,
-    transactionsCollectionName: String,
-    operationsCollectionName: String)
+    itemsColName: String,
+    buyActionsColName: String,
+    pawnActionsColName: String,
+    sellActionColName: String)
 
   case class RedisConfig(
     host: String,

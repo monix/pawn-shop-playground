@@ -49,10 +49,10 @@ object WorkerApp extends TaskApp with LazyLogging {
             case JoinReply(JoinResponse.JOINED, _) => {
               Task.raceMany(Seq(
                 Task.evalAsync(grpcServer.blockUntilShutdown()),
-                WorkerFlow(itemsKafkaConsumer, itemsOp.single).run().completedL,
-                WorkerFlow(buyActionsKafkaConsumer, buyActionsOp.single).run().completedL,
-                WorkerFlow(sellActionsKafkaConsumer, sellActionsOp.single).run().completedL,
-                WorkerFlow(pawnActionsKafkaConsumer, pawnActionsOp.single).run().completedL)).guarantee(Task(grpcServer.shutDown()))
+                InboundFlow(itemsKafkaConsumer, itemsOp.single).run().completedL,
+                InboundFlow(buyActionsKafkaConsumer, buyActionsOp.single).run().completedL,
+                InboundFlow(sellActionsKafkaConsumer, sellActionsOp.single).run().completedL,
+                InboundFlow(pawnActionsKafkaConsumer, pawnActionsOp.single).run().completedL)).guarantee(Task(grpcServer.shutDown()))
                 .as(ExitCode.Success)
             }
             case JoinReply(JoinResponse.REJECTED, _) => Task.now(ExitCode.Error)

@@ -1,7 +1,5 @@
 # Mini Platform
 
-This project is **real example** of a microservices platform that is _built up_ with _monix, monix-kafka, monix-bio, monix-connect_ between other libraries.
-
 This repo aims to be resource and *real example project* for building an application based on microservices by using 
 monix and its sub-projects.
 
@@ -25,7 +23,7 @@ The platform is composed in two services, the _dispatcher_ and _worker_, and the
 It is characterized for not implementing any database access,
  but rather for organising and orchestrating the workload on the workers.
 
-### Http
+#### Http
 
 Implements a **http server** that acts as the data entry point of the platform to add and fetch new `items`.
 The http routes are pretty minimal:
@@ -39,7 +37,7 @@ The http routes are pretty minimal:
 - GET */item/fetch?state={state}*
 
 
-**Grpc** 
+#### Grpc 
  - **Server**: The grpc server implementation simply expects `JoinRequest`s from the workers, returning `JoinResponse`s which 
  can be either `Joined` or `Rejected`. This acts like a very basic protocol for allowing to dynamically add new workers to the quorum,
 and providing scalability to the platform. 
@@ -57,7 +55,7 @@ They can be added on demand, scalable depending on the work flow.
 The grpc protocol is only designed for requesting (reading) data, on the other hand, 
 the data to be written is published into a broker, in which the worker will keep consuming and persisting to the database.
 
-### Grpc
+#### Grpc
 
 - **Client**
 Just right after starting the app, they will send the _JoinRequest_ grpc call to the dispatcher.
@@ -67,7 +65,7 @@ Just right after starting the app, they will send the _JoinRequest_ grpc call to
 - **Server**
 The grpc server will only start after we have received a `Joined` confirmation from the dispatcher, at that point the worker will be entitled to receive `fetch` requests.
    
-### Kafka
+#### Kafka
 The workers are continuously consuming events from the four different kafka topics (`item`, `buy-actions`, `sell-actions` and `pawn-actions`) that
 will be persisted afterwards to its respective collection in `MongoDb`.
 As the logic is shared between the four kind of events, it's implementation is generalized in the `InboundFlow` _type-class_.
