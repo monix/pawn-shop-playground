@@ -1,4 +1,4 @@
-# Mini Platform
+# Auction shop
 
 This repo aims to be resource and *real example project* for building an application based on microservices by using 
 monix and its sub-projects.
