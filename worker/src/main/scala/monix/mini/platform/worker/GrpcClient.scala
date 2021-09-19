@@ -3,15 +3,17 @@ package monix.mini.platform.worker
 import io.grpc.ManagedChannelBuilder
 import monix.eval.Task
 import com.typesafe.scalalogging.LazyLogging
-import monix.mini.platform.protocol.{ DispatcherProtocolGrpc, JoinReply, JoinRequest, WorkerInfo }
+import monix.mini.platform.protocol.{DispatcherProtocolGrpc, JoinReply, JoinRequest, WorkerInfo}
 import monix.mini.platform.worker.config.WorkerConfig
+import monix.mini.platform.worker.config.WorkerConfig.GrpcConfig
+
 import scala.concurrent.duration._
 
-class GrpcClient(config: WorkerConfig) extends LazyLogging {
+class GrpcClient(slaveId: String, grpcConfig: GrpcConfig) extends LazyLogging {
 
-  val channel = ManagedChannelBuilder.forAddress(config.dispatcherServer.host, config.dispatcherServer.port).usePlaintext().build()
+  val channel = ManagedChannelBuilder.forAddress(grpcConfig.server.host, grpcConfig.server.port).usePlaintext().build()
   val masterStub = DispatcherProtocolGrpc.stub(channel)
-  val slaveInfo = WorkerInfo.of(config.slaveId, config.grpcServer.host, config.grpcServer.port)
+  val slaveInfo = WorkerInfo.of(slaveId, grpcConfig.server.host, grpcConfig.server.port)
 
   def sendJoinRequest(retries: Int, backoffDelay: FiniteDuration = 5.seconds): Task[JoinReply] = {
     //grpc client
@@ -30,5 +32,5 @@ class GrpcClient(config: WorkerConfig) extends LazyLogging {
 }
 
 object GrpcClient {
-  def apply(config: WorkerConfig) = new GrpcClient(config)
+  def apply(slaveId: String, grpcConfig: GrpcConfig) = new GrpcClient(config)
 }
